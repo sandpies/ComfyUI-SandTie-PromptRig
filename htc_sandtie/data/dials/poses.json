@@ -1,0 +1,366 @@
+{
+  "id": "pose",
+  "label": "Pose",
+  "per": "project",
+  "note": "Dance isolations, S1–S9 ensemble formations, and clean anatomical postures.",
+  "options": [
+    {
+      "id": "dance_gravure_s_curve_hip_roll",
+      "label": "💃 Gravure S-Curve Figure-Eight Hip Sway & Waist Glide",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "stands in a sculpted S-curve facing the lens and rolls the hips in a slow, fluid figure-eight loop from left to right while gliding both palms downward along the ribs and waist with clean natural soft-tissue recoil",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_kpop_chest_pop_body_wave",
+      "label": "💃 K-Pop Idol Crisp Chest Pop → Vertical Body Wave → Hair Flip",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "hits two crisp rhythmic chest pops on the beat, rolls a fluid vertical body wave from shoulders through ribcage to hips, and sweeps one hand up to flip the hair with a sharp idol wink",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "dance_rear_arch_glute_shimmy_lookback",
+      "label": "💃 Rear-Facing Deep Lumbar Arch, Glute Shimmy & Look-Back Smirk",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "stands three-quarter rear to the camera with hands braced on upper thighs, deeply arches the lumbar spine to push the rounded glutes outward in a rhythmic left-right hip bounce, and glances back over one shoulder",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_kneeling_cat_stretch_to_upright_arch",
+      "label": "💃 Floor Cat-Stretch Arch → Kneeling Upright Hair Sweep",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "starts on hands and knees in a deep hollow-back cat stretch, then rises smoothly onto the knees to arch the chest forward while sweeping both hands up behind the head to lift the hair",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "dance_slow_pirouette_360_model_stop",
+      "label": "💃 Graceful 360° Pirouette Spin into Hand-on-Hip Model Pose",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "pivots smoothly on the ball of the foot through one continuous, unhurried 360-degree clockwise spin with hair flaring outward, settling into a front-facing S-curve pose with one hand on the hip",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_collarbone_to_chest_circle_trace",
+      "label": "💃 Slow Collarbone, Neck & Chest Fingertip Trace",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "slowly traces fingertips along the jawline, down the side of the neck, across the collarbone, and in a lingering circular glide over the upper chest while swaying the hips",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "dance_two_hand_waist_cinch_hip_pendulum",
+      "label": "💃 Two-Hand Waist Cinch & Pendulum Hip Tick-Tock",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "wraps both hands firmly around the narrowest part of the waist and rocks the pelvis side-to-side like a rhythmic pendulum on every beat with natural soft-tissue sway",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_wall_lean_leg_slide_up",
+      "label": "💃 Wall Lean Back-Arch & Slow Heel Slide Up the Wall",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "leans shoulder blades against the wall with the lower back arched forward, sliding one heel slowly up the wall while trailing the opposite hand down the outer thigh",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_chair_straddle_backrest_lean",
+      "label": "💃 Chair Reverse-Straddle — Forearms on Backrest & Slow Hip Grind",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "straddles a chair facing the backrest, crosses both forearms on top of the backrest to prop the chin forward toward the camera, and rolls the hips in a slow circular grind on the seat",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_mirror_palm_press_body_roll",
+      "label": "💃 Mirror Glass Palm Press & Side-Profile Body Undulation",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "presses one open palm flat against the mirror glass at shoulder height and executes a slow side-profile body wave from chest to hips while locking eyes with the reflection",
+      "domain": "mirror_vanity",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_bed_prone_ankle_cross_sway",
+      "label": "💃 Prone on Bed — Propped on Elbows with Crossed Ankles Swaying Behind",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "lies prone on the stomach propped up on both elbows with chin resting in cupped palms, lazily crossing and swaying both raised calves and bare feet in the air behind",
+      "domain": "bedroom",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dance_club_podium_overhead_wrist_groove",
+      "label": "💃 Club VIP Podium — Wrists Crossed Overhead & Deep Bass Hip Drop",
+      "group": "00 · Dance, Gravure & Idol Choreography",
+      "rule": "raises both arms overhead with wrists loosely crossed, rolling the ribcage and dropping into a deep knee-bend hip bounce on the bass drop",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "ensemble_v_formation_idol_squad_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): V-Formation Idol / Hero Squad Lineup (Center Lead + Flanking Wings)",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) in a sharp, depth-staggered V-formation facing the camera: <Subject 1> stands front-and-center in the foreground hero spot while <Subject 2> through <Subject N> flank symmetrically to the left and right in staggered depth tiers so every face and full outfit is unobstructed",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_vip_sofa_lounge_drape_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): VIP Velvet Sofa & Floor Lounge (Center Seated + Flanking Reclined)",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) across a wide luxury sofa and plush foreground rug: <Subject 1> sits centered on the cushions while flanking subjects recline on the armrests, lean over the backrest behind, and sit between knees on the floor in front in a cohesive multi-tier tableau",
+      "domain": "sofa_lounge",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_harem_bed_surround_worship_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): King-Bed Harem Surround (Center Subject + Flanking Partners)",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) across a sprawling king bed: the centerpiece subject reclines at the center while the surrounding partners kneel and drape closely along the left side, right side, pillows, and lower thighs with synchronized hands and kisses trailing across the body",
+      "domain": "bedroom",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_back_to_back_combat_circle_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): 360° Back-to-Back Combat Defensive Ring (Weapons Drawn Outward)",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) standing shoulder-to-shoulder and back-to-back in a tight defensive circle at the center of the arena with weapons/fists raised outward toward the surrounding perimeter",
+      "domain": "combat_action",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_slowmo_walk_abreast_lineup_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): Reservoir-Dogs / Avengers Slow-Motion Walk Abreast Toward Camera",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) walking forward abreast in a wide horizontal line straight toward the retreating camera in synchronized slow-motion stride with coats and hair billowing",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_last_supper_banquet_table_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): Long Banquet / Boardroom Table Panorama (Center Boss + Flanking Seats)",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) along the far side and ends of a long banquet or boardroom table facing the camera, with <Subject 1> commanding the center seat while the remaining subjects lean in, toast glasses, or converse on either side",
+      "domain": "office_desk",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_girl_group_synchronized_choreo_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): Synchronized K-Pop / Dance Group Choreography Formation",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) in a staggered diamond dance formation executing frame-accurate synchronized hip sways, chest pops, and arm angles to the beat",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "ensemble_poolside_cabana_sunbed_party_s1_s9",
+      "label": "🎭 Ensemble (S1–S9): Poolside / Yacht Sunpad Group Pose (Foreground Edge + Daybed Tiers)",
+      "group": "00 · Multi-Character Ensemble Blocking (S1–S9)",
+      "rule": "stage all cast subjects (<Subject 1> through <Subject N>) across two depth tiers: foreground subjects seated on the pool/yacht edge dangling bare legs in the water while midground subjects recline propped on elbows across the wide sunpad behind them",
+      "domain": "wet_pool",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "dvm_figure_eight_hip_sway",
+      "label": "💃 Figure-Eight Hip Sway — Hypnotic left-to-right figure-eight waist glide and hip rotation.",
+      "group": "00 · Dance Vocabulary — Core Body & Hip Isolation",
+      "rule": "rolls her hips in a slow, fluid figure-eight loop from left to right while gliding palms downward along her waist.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_sensual_hip_rolls",
+      "label": "💃 Sensual Circular Hip Rolls — Deep unhurried pelvic circles and waist undulations.",
+      "group": "00 · Dance Vocabulary — Core Body & Hip Isolation",
+      "rule": "rolls her pelvis in a slow, heavy circular roll with clean natural soft-tissue recoil.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_spine_arch_look_back",
+      "label": "💃 Deep Spine Arch & Look-Back — Arching lumbar spine to push rounded glutes outward while looking back over shoulder.",
+      "group": "00 · Dance Vocabulary — Core Body & Hip Isolation",
+      "rule": "deeply arches her lumbar spine, accentuating the curve of her hips and rounded glutes while looking back over her right shoulder.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_vertical_body_wave",
+      "label": "💃 Vertical Body Wave — Fluid wave rolling from shoulders down through ribcage and hips to knees.",
+      "group": "00 · Dance Vocabulary — Core Body & Hip Isolation",
+      "rule": "executes a fluid vertical body wave rolling from her shoulders down through her ribcage to her knees.",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "dvm_floor_cat_stretch",
+      "label": "💃 Floor Cat Stretch & Arch — On hands and knees, arching spine upward and swaying hips.",
+      "group": "00 · Dance Vocabulary — Core Body & Hip Isolation",
+      "rule": "arches her spine high toward the ceiling like a cat stretch, then slowly dips her spine downward while swaying hips.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_collarbone_trace",
+      "label": "💃 Collarbone & Neck Trace — Slow fingertip tracing along jawline, neck, and collarbone.",
+      "group": "00 · Dance Vocabulary — Upper Body & Hand Business",
+      "rule": "slowly traces her fingertips along her jawline, neck, and collarbone in an unhurried glide.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_chest_fingertip_trace",
+      "label": "💃 Chest Fingertip Circle Trace — Slow circular motions with fingertips over clothing around chest/areola.",
+      "group": "00 · Dance Vocabulary — Upper Body & Hand Business",
+      "rule": "makes slow, circular motions with the tips of her fingers across her collarbone and upper chest.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_pigtail_flip",
+      "label": "💃 Hair Sweep & Flip — Using both hands to lift and flip hair up and over shoulders.",
+      "group": "00 · Dance Vocabulary — Upper Body & Hand Business",
+      "rule": "sweeps both hands up to lift and flip her hair back over her shoulders in a dramatic hair sweep.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_hand_heart",
+      "label": "💃 Hand-Heart Chest Sway — Forming a cute curved heart shape with fingers over chest.",
+      "group": "00 · Dance Vocabulary — Upper Body & Hand Business",
+      "rule": "holds a cute curved heart shape with fingers and thumbs in front of her chest while swaying hips.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_finger_beckon",
+      "label": "💃 Teasing Finger Beckon — Curling index finger in a direct 'come here' beckon.",
+      "group": "00 · Dance Vocabulary — Upper Body & Hand Business",
+      "rule": "curls her index finger twice in a direct teasing 'come here' beckon toward the camera lens.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_pirouette_spin",
+      "label": "💃 360-Degree Pirouette Spin — Graceful complete rotation ending in model pose.",
+      "group": "00 · Dance Vocabulary — Spins & Payoff Poses",
+      "rule": "pivots smoothly on the ball of her boot through one continuous, graceful 360-degree clockwise spin, settling into a front-facing hand-on-hip pose.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_look_back_wink",
+      "label": "💃 Look-Back Winking Wink — Glancing over shoulder with a playful wink.",
+      "group": "00 · Dance Vocabulary — Spins & Payoff Poses",
+      "rule": "slowly turns her head to look back over her shoulder with a teasing, intimate wink into the lens.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "dvm_lens_lean_smirk",
+      "label": "💃 In-Your-Face Lens Lean — Leaning upper torso close to the camera lens with a smirk.",
+      "group": "00 · Dance Vocabulary — Spins & Payoff Poses",
+      "rule": "leans closer to the lens, places both hands on her waist, and holds a confident smirk.",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "pose_contrapposto_lean",
+      "label": "Poised Contrapposto Hip-Shift Stand",
+      "group": "Standing",
+      "aspect_best": "9:16",
+      "rule": "stands tall with weight shifted onto one hip in a relaxed S-curve contrapposto, chin lifted toward the lens",
+      "domain": "general",
+      "duration_best": "10-14 s",
+      "duration_tip": "⏱ BEST LENGTH: 10–14 s (241–345f) — Multi-move choreography / ensemble blocking."
+    },
+    {
+      "id": "pose_seated_desk_cross",
+      "label": "Seated Desk-Edge Crossed-Leg Lean",
+      "group": "Sitting",
+      "aspect_best": "either",
+      "rule": "perches cleanly on the front edge of the desk or table with ankles crossed and torso leaning slightly forward toward the viewer",
+      "domain": "office_desk",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "pose_reclined_pillow_side",
+      "label": "Side-Reclined Elbow Prop Gaze",
+      "group": "Lying",
+      "aspect_best": "16:9",
+      "rule": "reclines lengthwise on one side propped lightly on a forearm with one knee bent upward and relaxed gaze toward camera",
+      "domain": "bedroom",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "pose_kneeling_upright_heels",
+      "label": "Kneeling Upright on Heels · Poised Back",
+      "group": "Kneeling",
+      "aspect_best": "9:16",
+      "rule": "kneels tall sitting gracefully back onto heels with arched lower spine and palms gliding over thighs",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "pose_wall_lean_lookback",
+      "label": "Wall-Braced Over-Shoulder Glance",
+      "group": "Standing",
+      "aspect_best": "9:16",
+      "rule": "leans one shoulder softly against the wall while turning her chin cleanly over her shoulder toward the lens",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    },
+    {
+      "id": "pose_two_shot_faceoff",
+      "label": "Two-Subject Face-to-Face Tension Stand",
+      "group": "Two-Subject",
+      "people": 2,
+      "aspect_best": "16:9",
+      "rule": "both subjects stand inches apart facing one another across the center gap with locked eye contact and taut body language",
+      "domain": "general",
+      "duration_best": "6-10 s",
+      "duration_tip": "⏱ BEST LENGTH: 6–10 s (141–241f) — Clean pose or groove hold."
+    }
+  ]
+}
