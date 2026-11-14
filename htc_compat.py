@@ -392,6 +392,7 @@ def register_extra_routes(instance, web) -> None:
                 },
                 "models": found if isinstance(found, list) else [],
                 "running": bool(running),
+                "startup_error": "" if running else _llm.startup_error(conn.get("backend")),
             })
         except Exception as exc:
             return web.json_response({"ok": False, "error": str(exc)}, status=500)
@@ -405,12 +406,36 @@ def register_extra_routes(instance, web) -> None:
         try:
             if isinstance(body, dict) and body.get("action") == "start":
                 _ok, _msg = await _llm.start_process_async(model_file=str(body.get("model_file") or "").strip() or None)
-                return web.json_response({"ok": _ok, "error": "" if _ok else _msg, "note": _msg, "running": await _llm.server_running_async(), **_llm.load_conn()})
+                _conn = _llm.load_conn()
+                _run = await _llm.server_running_async(_conn.get("backend"))
+                return web.json_response({
+                    "ok": _ok,
+                    "error": "" if _ok else _msg,
+                    "note": _msg,
+                    "running": _run,
+                    "startup_error": "" if _run else _llm.startup_error(_conn.get("backend")),
+                    **_conn,
+                })
             if isinstance(body, dict) and body.get("action") == "stop":
                 _n = _llm.stop_process()
-                return web.json_response({"ok": True, "note": f"stopped {_n} process(es)", "running": await _llm.server_running_async(), **_llm.load_conn()})
+                _conn = _llm.load_conn()
+                _run = await _llm.server_running_async(_conn.get("backend"))
+                return web.json_response({
+                    "ok": True,
+                    "note": f"stopped {_n} process(es)",
+                    "running": _run,
+                    "startup_error": "",
+                    **_conn,
+                })
             if isinstance(body, dict) and body.get("action") == "status":
-                return web.json_response({"ok": True, "running": await _llm.server_running_async(), **_llm.load_conn()})
+                _conn = _llm.load_conn()
+                _run = await _llm.server_running_async(_conn.get("backend"))
+                return web.json_response({
+                    "ok": True,
+                    "running": _run,
+                    "startup_error": "" if _run else _llm.startup_error(_conn.get("backend")),
+                    **_conn,
+                })
             conn = _llm.save_conn(body if isinstance(body, dict) else {})
             return web.json_response({"ok": True, **conn})
         except Exception as exc:

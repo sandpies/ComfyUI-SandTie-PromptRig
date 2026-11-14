@@ -515,7 +515,8 @@ function createSandTieCore(node, {
     cfgUrlInp.style.flex = "1 1 170px";
     const cfgModelInp = el("input", "h3e-writer-brief");
     cfgModelInp.type = "text";
-    cfgModelInp.placeholder = "model id (optional on LM Studio)";
+    cfgModelInp.placeholder = "model id (optional / auto after Start)";
+    cfgModelInp.title = "API model ID reported over /v1/models (not a file path; leave blank to auto-pick once running).";
     cfgModelInp.style.flex = "1 1 170px";
     const cfgModelPick = el("select", "h3e-select");
     cfgModelPick.style.maxWidth = "175px";
@@ -534,11 +535,13 @@ function createSandTieCore(node, {
     const cfgPathRow = el("div", "h3st-row");
     const cfgExeInp = el("input", "h3e-writer-brief");
     cfgExeInp.type = "text";
-    cfgExeInp.placeholder = "nInfer exe path (e.g. ninfer-serve.exe)";
+    cfgExeInp.placeholder = "nInfer exe path (e.g. C:\\ninfer\\ninfer-serve.exe)";
+    cfgExeInp.title = "Full path to ninfer-serve.exe (or its folder). Leave blank to auto-detect in C:\\ninfer, D:\\ninfer, or C:\\AI\\NInfer.";
     cfgExeInp.style.flex = "1 1 220px";
     const cfgModelFileInp = el("input", "h3e-writer-brief");
     cfgModelFileInp.type = "text";
-    cfgModelFileInp.placeholder = "nInfer model path (.ninfer)";
+    cfgModelFileInp.placeholder = "nInfer .ninfer file (or models folder / blank = auto)";
+    cfgModelFileInp.title = "Full path to your .ninfer model file (e.g. Ternary-Bonsai-2-27B-ninfer-v3.ninfer), a models folder containing one, or blank to auto-pick from models\\.";
     cfgModelFileInp.style.flex = "1 1 240px";
     cfgPathRow.append(el("span", "h3st-chips-lbl", "PATHS"), cfgExeInp, cfgModelFileInp);
     cfgPathRow.hidden = true;
@@ -1683,7 +1686,13 @@ function createSandTieCore(node, {
             const j = await r.json();
             if (mySeq !== statusRefreshSeq) return;
             if (j.ok) {
-                _sharedStatus = { running: Boolean(j.running), backend: j.backend, backend_label: j.backend_label, model: j.model };
+                _sharedStatus = {
+                    running: Boolean(j.running),
+                    backend: j.backend,
+                    backend_label: j.backend_label,
+                    model: j.model,
+                    startup_error: j.startup_error || "",
+                };
                 paintServerButtons();
                 if (j.catalog) {
                     _sharedCatalog = j.catalog;
@@ -1724,12 +1733,14 @@ function createSandTieCore(node, {
     }
 
     let writerLoadSeq = 0;
+    let writerCfgLoaded = false;
     async function loadWriterSettings() {
         const mySeq = ++writerLoadSeq;
         try {
             const r = await fetch(LLM_URL);
             const j = await r.json();
             if (!j.ok || mySeq !== writerLoadSeq) return;
+            writerCfgLoaded = true;
             cfgBackSel.textContent = "";
             const backs = Array.isArray(j.backends) && j.backends.length
                 ? j.backends
@@ -1743,6 +1754,9 @@ function createSandTieCore(node, {
             writerModeSel.value = j.backend || "lmstudio";
             cfgUrlInp.value = j.server_url || "";
             cfgModelInp.value = j.model || "";
+            cfgModelInp.placeholder = cfgBackSel.value === "ninfer"
+                ? "model id (auto after Start; blank = auto)"
+                : "model id (optional on LM Studio)";
             cfgUnloadChk.checked = j.unload_on_run !== false;
             const curPaths = (j.server_paths && j.server_paths[cfgBackSel.value]) || {};
             const hasProg = (backs.find((b) => b.id === cfgBackSel.value)?.program) || (cfgBackSel.value === "ninfer");
@@ -1750,7 +1764,7 @@ function createSandTieCore(node, {
             cfgExeInp.value = curPaths.exe || "";
             cfgExeInp.placeholder = curPaths.found_exe
                 ? `Auto-detected: ${curPaths.found_exe}`
-                : "nInfer exe path (e.g. ninfer-serve.exe)";
+                : "nInfer exe path (e.g. C:\\ninfer\\ninfer-serve.exe)";
             cfgModelFileInp.value = curPaths.model_file || "";
             cfgModelPick.textContent = "";
             const ph = el("option", null, (j.models || []).length ? "— Pick loaded model —" : "— No models listed —");
@@ -1766,7 +1780,7 @@ function createSandTieCore(node, {
         } catch (_) {}
     }
 
-    async function saveWriterSettings() {
+    async function saveWriterSettings({ quiet = false } = {}) {
         try {
             const activeBack = cfgBackSel.value || writerModeSel.value || "lmstudio";
             const patch = {
@@ -1788,29 +1802,74 @@ function createSandTieCore(node, {
                 body: JSON.stringify(patch),
             });
             const j = await r.json();
-            if (!j.ok) return say(j.error || "Failed to save writer settings.", "error");
+            if (!j.ok) {
+                say(j.error || "Failed to save writer settings.", "error");
+                return false;
+            }
             await Promise.all([loadWriterSettings(), refreshStatus(false)]);
-            say(`Saved writer (${j.backend || activeBack} @ ${j.server_url || cfgUrlInp.value}).`, "hint");
+            if (!quiet) {
+                say(`Saved writer (${j.backend || activeBack} @ ${j.server_url || cfgUrlInp.value}).`, "hint");
+            }
+            return true;
         } catch (err) {
             say(String(err), "error");
+            return false;
         }
     }
 
     async function toggleServer(action) {
-        say(action === "start" ? "Starting local writer…" : "Stopping local writer…", "hint");
-        const r = await fetch(LLM_URL, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action }),
-        });
-        const j = await r.json();
-        if (action === "start" && j.ok) {
+        const btn = action === "start" ? startBtn : stopBtn;
+        btn.disabled = true;
+        try {
+            if (action === "start" && writerCfgLoaded) {
+                const savedOk = await saveWriterSettings({ quiet: true });
+                if (!savedOk) return;
+            }
+            say(action === "start" ? "Starting local writer…" : "Stopping local writer…", "hint");
+            const reqBody = { action };
+            if (action === "start" && writerCfgLoaded && cfgModelFileInp.value.trim()) {
+                reqBody.model_file = cfgModelFileInp.value.trim();
+            }
+            const r = await fetch(LLM_URL, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(reqBody),
+            });
+            const j = await r.json();
+            if (!j.ok) {
+                await refreshStatus(false);
+                say(j.error || j.note || `Failed to ${action} local writer.`, "error");
+                return;
+            }
+            if (action === "stop") {
+                await refreshStatus(false);
+                say(j.note || "Stopped local writer.", "hint");
+                return;
+            }
+            if (j.running) {
+                await refreshStatus(false);
+                if (writerCfgLoaded) await loadWriterSettings();
+                say(`${_sharedStatus.backend_label || "Writer"} Ready!`, "hint");
+                return;
+            }
+            say(j.note || "Starting local writer… waiting for server.", "hint");
             for (let i = 0; i < 40; i++) {
                 await new Promise((res) => setTimeout(res, 1500));
                 await refreshStatus(false);
-                if (_sharedStatus.running) break;
+                if (_sharedStatus.running) {
+                    if (writerCfgLoaded) await loadWriterSettings();
+                    say(`${_sharedStatus.backend_label || "Writer"} Ready!`, "hint");
+                    return;
+                }
+                if (_sharedStatus.startup_error) {
+                    say(`Writer stopped during startup: ${_sharedStatus.startup_error}`, "error");
+                    return;
+                }
             }
-        } else {
-            await refreshStatus(false);
+            say("Timed out waiting for local writer — check server.err in your nInfer folder.", "error");
+        } catch (err) {
+            say(String(err), "error");
+        } finally {
+            btn.disabled = false;
         }
     }
 

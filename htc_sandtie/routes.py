@@ -162,6 +162,7 @@ def register_sandtie_routes(instance, web) -> None:
                 "backend": conn.get("backend") or "lmstudio",
                 "backend_label": _llm.backend_spec(conn.get("backend"))["label"],
                 "model": conn.get("model") or "",
+                "startup_error": "" if running else _llm.startup_error(conn.get("backend")),
             }
             if not lite:
                 payload["catalog"] = _cat.ui_catalog()

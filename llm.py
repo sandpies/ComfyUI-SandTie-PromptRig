@@ -201,17 +201,164 @@ def _server_exe(name):
     spec = dict(SERVER_EXES).get(name)
     if not spec:
         return None
+    exe = spec[1] if isinstance(spec, (list, tuple)) else spec
     saved = str((CONN.get("servers") or {}).get(name, {}).get("exe") or "").strip()
     if saved:
         p = os.path.abspath(saved)
+        if os.path.isdir(p):
+            p = os.path.join(p, exe)
         return p if os.path.isfile(p) else None
-    exe = spec[1] if isinstance(spec, (list, tuple)) else spec
-    roots = [os.path.join(f"{d}:\\", p) for d in ("C", "D") for p in ("", "ninfer")]
+    roots = [
+        os.path.join(f"{d}:\\", p)
+        for d in ("C", "D")
+        for p in ("", "ninfer", "NInfer", os.path.join("AI", "NInfer"), os.path.join("AI", "ninfer"))
+    ]
     for r in roots:
         p = os.path.join(r, exe)
         if os.path.isfile(p):
             return p
     return None
+
+
+def _inspect_ninfer(path):
+    """Read a v3 `.ninfer` container header in <1 ms to detect components.
+
+    Returns `{components: set[str], has_proposal: bool, name: str}` or `None`
+    for older/unrecognized files so `_server_args` never passes `--vision`,
+    `--spec mtp`, or `--lm-head-draft` to a `.ninfer` that lacks them.
+    """
+    import os
+    import struct
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        with open(path, "rb") as fh:
+            magic = fh.read(8)
+            if magic != b"NINFER\x00\x03":
+                return None
+            hlen = struct.unpack("<Q", fh.read(8))[0]
+            if hlen <= 0 or hlen > 16 * 1024 * 1024:
+                return None
+            raw = fh.read(min(hlen, 4 * 1024 * 1024))
+    except OSError:
+        return None
+    idx = raw.find(b"{")
+    if idx < 0:
+        return None
+    try:
+        obj, _ = json.JSONDecoder().raw_decode(raw[idx:].decode("utf-8", "replace"))
+    except Exception:
+        return None
+    if not isinstance(obj, dict):
+        return None
+    comps = obj.get("components")
+    if not isinstance(comps, dict):
+        return None
+    text_meta = comps.get("text") if isinstance(comps.get("text"), dict) else {}
+    meta = obj.get("metadata") if isinstance(obj.get("metadata"), dict) else {}
+    return {
+        "components": {str(k).lower() for k in comps.keys()},
+        "has_proposal": bool(text_meta.get("proposal")),
+        "name": str(meta.get("name") or "").strip(),
+    }
+
+
+def _find_ninfer_in_dir(mdir):
+    """Find the best `.ninfer` artifact inside `mdir` (searching subfolders too)."""
+    import os
+    if not mdir or not os.path.isdir(mdir):
+        return "", False
+    default = os.path.join(mdir, DEFAULT_MODEL_FILE)
+    if os.path.isfile(default):
+        return default, False
+    cands = []
+    has_gguf = False
+    try:
+        for root, dirs, files in os.walk(mdir):
+            dirs[:] = [d for d in dirs if d.lower() not in ("webui", ".git", "__pycache__")]
+            for fn in files:
+                low = fn.lower()
+                full = os.path.join(root, fn)
+                if low.endswith(".ninfer") and os.path.isfile(full):
+                    cands.append(full)
+                elif low.endswith(".gguf"):
+                    has_gguf = True
+    except OSError:
+        return "", False
+    if not cands:
+        return "", has_gguf
+    non_table = [p for p in cands if "ngram-table" not in os.path.basename(p).lower()]
+    pool = non_table or cands
+    return max(pool, key=os.path.getsize), has_gguf
+
+
+def _resolve_ninfer_model(model_arg, exe):
+    """Resolve `.ninfer` artifact path from explicit file, folder, or `<exe>/models`."""
+    import os
+    raw = str(model_arg or "").strip()
+    if not raw:
+        raw = str((CONN.get("servers") or {}).get("ninfer", {}).get("model_file") or "").strip()
+    exe_dir = os.path.dirname(exe)
+    default_mdir = os.path.join(exe_dir, "models")
+
+    if raw:
+        cand = os.path.abspath(raw) if (os.path.isabs(raw) or os.sep in raw or "/" in raw) else ""
+        if not cand:
+            for base in (default_mdir, exe_dir):
+                joined = os.path.join(base, raw)
+                if os.path.exists(joined):
+                    cand = os.path.abspath(joined)
+                    break
+        if cand and os.path.isfile(cand):
+            if cand.lower().endswith(".gguf"):
+                return "", (
+                    f"nInfer cannot load GGUF files ({os.path.basename(cand)}). "
+                    "Select a .ninfer v3 artifact, or switch Writer mode to LM Studio for GGUF."
+                )
+            return cand, ""
+        if cand and os.path.isdir(cand):
+            found, has_gguf = _find_ninfer_in_dir(cand)
+            if found:
+                return found, ""
+            if has_gguf:
+                return "", (
+                    f"No .ninfer model found in {cand} (found .gguf — nInfer only runs "
+                    ".ninfer v3 artifacts; use LM Studio for GGUF)."
+                )
+            return "", f"No .ninfer model file found inside folder: {cand}"
+        if not cand:
+            # Bare filename not in top-level; walk <exe>/models in case it's in a subfolder
+            for root, dirs, files in os.walk(default_mdir) if os.path.isdir(default_mdir) else ():
+                dirs[:] = [d for d in dirs if d.lower() not in ("webui", ".git", "__pycache__")]
+                for fn in files:
+                    if fn.lower() == raw.lower():
+                        return os.path.join(root, fn), ""
+        return "", f"nInfer model file not found: {raw}"
+
+    found, has_gguf = _find_ninfer_in_dir(default_mdir)
+    if found:
+        return found, ""
+    if has_gguf:
+        return "", (
+            f"No .ninfer model found in {default_mdir} (found .gguf — nInfer only runs "
+            ".ninfer v3 artifacts; use LM Studio for GGUF)."
+        )
+    return "", (
+        f"No .ninfer model file found in {default_mdir}. "
+        "Put a .ninfer artifact there or set the .ninfer file path in Settings."
+    )
+
+
+def _server_port(name):
+    entry = (CONN.get("servers") or {}).get(name) or {}
+    base = normalise_base(entry.get("server_url") or BACKENDS.get(name, {}).get("default_base") or "")
+    try:
+        parsed = urllib.parse.urlparse(base)
+        if parsed.port:
+            return str(parsed.port)
+    except Exception:
+        pass
+    return BACKENDS.get(name, {}).get("default_base", ":8080").rsplit(":", 1)[-1]
 
 
 def _server_args(name, model_file=None):
@@ -246,13 +393,42 @@ def _server_args(name, model_file=None):
     if name == "ninfer":
         model = str(model_file or os.path.join("C:\\ninfer\\models",
                                                DEFAULT_MODEL_FILE))
-        port = (BACKENDS["ninfer"]["default_base"].rsplit(":", 1)[-1])
-        spec = (["--spec", "dflash2", "--draft-tokens", "7"]
-                if "dflash" in os.path.basename(model).lower()
-                else ["--spec", "mtp", "--draft-tokens", "3"])
-        return [model, "--host", "127.0.0.1", "--port", port,
-                "--max-context", "65536", "--vision", "--no-thinking",
-                *spec, "--lm-head-draft"]
+        port = _server_port("ninfer")
+        low = os.path.basename(model).lower()
+        is_ternary = "ternary" in low or "bonsai" in low
+        info = _inspect_ninfer(model)
+
+        if info is not None:
+            comps = info["components"]
+            has_vision = "vision" in comps
+            if "dflash" in low and "dflash2" in comps:
+                spec = ["--spec", "dflash2", "--draft-tokens", "7"]
+            elif "mtp" in comps:
+                spec = ["--spec", "mtp", "--draft-tokens", "3"]
+            elif "dflash2" in comps:
+                spec = ["--spec", "dflash2", "--draft-tokens", "5"]
+            elif "dflash" in comps:
+                spec = ["--spec", "dflash", "--draft-tokens", "7"]
+            else:
+                spec = []
+            use_lm_head_draft = bool(info["has_proposal"]) and not is_ternary
+        else:
+            has_vision = True
+            spec = (["--spec", "dflash2", "--draft-tokens", "7"]
+                    if "dflash" in low
+                    else ["--spec", "mtp", "--draft-tokens", "3"])
+            use_lm_head_draft = not is_ternary
+
+        args = [model, "--host", "127.0.0.1", "--port", port, "--max-context", "65536"]
+        if is_ternary:
+            args.extend(["--kv-capacity", "auto"])
+        if has_vision:
+            args.append("--vision")
+        args.append("--no-thinking")
+        args.extend(spec)
+        if use_lm_head_draft:
+            args.append("--lm-head-draft")
+        return args
     return []
 
 
@@ -334,11 +510,15 @@ def startup_error(name=None, tail_bytes=65536):
     except OSError:
         return ""
     last = text.rfind("starting engine")
-    if last < 0:
-        return ""
-    for line in text[last:].splitlines():
+    tail = text[last:] if last >= 0 else text[-2048:]
+    for line in tail.splitlines():
         if " FATAL " in line:
             return line.split(" FATAL ", 1)[1].strip()
+    if "listening on" not in tail:
+        for line in reversed(tail.splitlines()[-6:]):
+            low = line.lower()
+            if "error:" in low or "unknown " in low or "unrecognized " in low or " ERROR " in line:
+                return line.strip()
     return ""
 
 
@@ -393,33 +573,13 @@ def start_process(model_file=None, name=None, already_checked=False):
         return True, f"{backend_spec(n)['label']} is already running."
     exe = _server_exe(n)
     if not exe:
-        return False, (f"No {backend_spec(n)['label']} binary found. Put it in "
-                       f"C:\\ninfer, or set the path in Settings.")
+        return False, (f"No {backend_spec(n)['label']} binary found. Put ninfer-serve.exe in "
+                       f"C:\\ninfer (or C:\\AI\\NInfer), or set its path in Settings.")
     model = str(model_file or "").strip()
-    # D1h: the SAVED model file, before the search order. Before this the
-    # settings panel could show and write the path and the server would ignore
-    # it -- the field would have looked broken on every machine that is not the
-    # author's. Argument first, then saved, then beside-the-binary, then the
-    # conventional folder.
-    if n == "ninfer" and not model:
-        model = str((CONN.get("servers") or {}).get(n, {})
-                    .get("model_file") or "").strip()
-    if n == "ninfer" and not os.path.isfile(model):
-        mdir = os.path.join(os.path.dirname(exe), "models")
-        default = os.path.join(mdir, DEFAULT_MODEL_FILE)
-        model = default if os.path.isfile(default) else ""
-        if not model and os.path.isdir(mdir):
-            try:
-                cand = [os.path.join(mdir, f) for f in os.listdir(mdir)
-                        if f.lower().endswith(".ninfer")
-                        and os.path.isfile(os.path.join(mdir, f))]
-                if cand:
-                    model = max(cand, key=os.path.getsize)
-            except OSError:
-                pass
+    if n == "ninfer":
+        model, err_msg = _resolve_ninfer_model(model, exe)
         if not model:
-            return False, ("No .ninfer model file found. Put one in "
-                           "C:\\ninfer\\models, or set the path in Settings.")
+            return False, err_msg
     args = _server_args(n, model or None)
     try:
         logdir = os.path.dirname(exe)
