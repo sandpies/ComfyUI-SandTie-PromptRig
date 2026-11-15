@@ -10,7 +10,7 @@
       "group": "Asia & Africa",
       "accent": "native Japanese",
       "words": "crisp mora-timed Japanese pronunciation, expressive pitch-accent intonation, anime seiyuu emotional clarity",
-      "small": "nee, chotto, sugoi, yamete, iku",
+      "small": "ねぇ, ちょっと待って, すごい, いい感じ",
       "lang": "Japanese",
       "domain": "general"
     },
@@ -20,7 +20,7 @@
       "group": "Asia & Africa",
       "accent": "native Seoul Korean",
       "words": "smooth Seoul standard intonation, expressive sentence-final endings, soft breathy consonants",
-      "small": "oppa, jinjja, aigoo, chagiya, jebal",
+      "small": "잠깐만, 진짜로, 이리 와, 좋아",
       "lang": "Korean",
       "domain": "general"
     },
@@ -30,7 +30,7 @@
       "group": "Asia & Africa",
       "accent": "native Mandarin Chinese",
       "words": "clear four-tone contour, soft retroflex initials, melodic sentence-final particles",
-      "small": "ba, ne, aiyo, baobei, kuai dian",
+      "small": "等等, 过来点, 真好听, 看着我",
       "lang": "Mandarin",
       "domain": "general"
     },
@@ -40,7 +40,7 @@
       "group": "Americas",
       "accent": "native Latin American Spanish",
       "words": "warm syllable-timed cadence, rolled r, passionate open vowels, affectionate diminutives",
-      "small": "papi, mi amor, ay dios, rico, más",
+      "small": "mi amor, acércate, qué rico, más cerca",
       "lang": "Spanish",
       "domain": "general"
     },
@@ -50,7 +50,7 @@
       "group": "Europe",
       "accent": "native Parisian French",
       "words": "soft uvular r, nasal vowels, fluid liaison, breathy phrase-final stress",
-      "small": "mon chéri, oui, encore, oh là là, doucement",
+      "small": "mon chéri, viens ici, encore, tout doucement",
       "lang": "French",
       "domain": "general"
     },
@@ -60,7 +60,7 @@
       "group": "Europe",
       "accent": "native Russian",
       "words": "rich palatalized consonants, dark l, rolled r, deep resonant vowel stress",
-      "small": "da, moy horoshiy, davay, bozhe moy",
+      "small": "слушай, иди сюда, смотри на меня, давай",
       "lang": "Russian",
       "domain": "general"
     },
@@ -70,7 +70,7 @@
       "group": "Americas",
       "accent": "native Brazilian Portuguese",
       "words": "musical nasal diphthongs, palatalized t and d, warm rhythmic cadence",
-      "small": "amor, nossa, gostoso, vem cá, mais",
+      "small": "meu amor, vem cá, nossa, mais perto",
       "lang": "Portuguese",
       "domain": "general"
     },
@@ -80,7 +80,7 @@
       "group": "Europe",
       "accent": "native Italian",
       "words": "geminate double consonants, open musical vowels, rolling r, expressive rising-falling contour",
-      "small": "amore, tesoro, dio mio, ancora, vieni",
+      "small": "amore mio, vieni qui, guarda, ancora",
       "lang": "Italian",
       "domain": "general"
     },

@@ -113,12 +113,18 @@ function attachRig(node) {
 
     const preview = el("pre", "h3st-node-preview");
 
+    function aspectLabel(raw) {
+        const s = String(raw || "16:9 landscape").trim();
+        const m = s.match(/(\d+)\s*:\s*(\d+)/);
+        return m ? `${m[1]}:${m[2]}` : s;
+    }
+
     function refreshPreview() {
         const wm = String(widgetByName(node, "wire_mode")?.value || "Prompt Only");
         const isCond = wm.includes("Direct");
         const fmt = String(widgetByName(node, "h3_format")?.value || "H3 Auto");
         const wMode = String(widgetByName(node, "write_mode")?.value || "CPU");
-        const asp = String(widgetByName(node, "aspect")?.value || "16:9");
+        const asp = aspectLabel(widgetByName(node, "aspect")?.value || "16:9 landscape");
         const dur = String(widgetByName(node, "duration")?.value || "10 s");
         badge.textContent = `${isCond ? "Direct H3" : "Prompt"} · ${fmt.split(" (")[0]} · ${asp} · ${dur}`;
 
@@ -142,8 +148,8 @@ function attachRig(node) {
         const cw = Number(widgetByName(node, "width")?.value || 0);
         const ch = Number(widgetByName(node, "height")?.value || 0);
         flavors.aspect = (cw > 0 && ch > 0)
-            ? (ch > cw ? "9:16" : (cw > ch ? "16:9" : "1:1"))
-            : String(widgetByName(node, "aspect")?.value || "16:9");
+            ? `${cw}:${ch}`
+            : aspectLabel(widgetByName(node, "aspect")?.value || "16:9 landscape");
         flavors.output_format = fmtCode;
         flavors.double_knot = String(wMode?.value || "").includes("Double-Knot");
 
@@ -275,6 +281,11 @@ app.registerExtension({
         const onConfigure = nodeType.prototype.onConfigure;
         nodeType.prototype.onConfigure = function () {
             const r = onConfigure?.apply(this, arguments);
+            const aw = widgetByName(this, "aspect");
+            if (aw) {
+                const legacyMap = { "16:9": "16:9 landscape", "9:16": "9:16 portrait", "1:1": "1:1 square" };
+                if (legacyMap[aw.value]) aw.value = legacyMap[aw.value];
+            }
             attachRig(this);
             this._sandtieRefreshPreview?.();
             return r;

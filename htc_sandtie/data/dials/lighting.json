@@ -430,6 +430,34 @@
       "group": "Light · Natural, Daylight & Golden Hour",
       "rule": "soft organic patches of warm filtered light and leaf shadows shifting gently across skin",
       "domain": "general"
+    },
+    {
+      "id": "light_epiphany_shift",
+      "label": "💡 Epiphany Illumination Shift (Light Finds Face on Realization)",
+      "group": "Light · Dramatic & Storytelling",
+      "rule": "motivated key illumination brightening smoothly across the subject's eyes and cheekbone at the exact beat of realization while surrounding shadows stay deep",
+      "domain": "general"
+    },
+    {
+      "id": "light_gobo_cucoloris_patterns",
+      "label": "🪟 Gobo / Cucoloris Graphic Shadows (Blinds, Leaves & Grille Patterns)",
+      "group": "Light · Dramatic & Storytelling",
+      "rule": "focused hard beam projected through patterned shutters, wrought iron, or foliage throwing crisp alternating bands of light and shadow across skin and walls",
+      "domain": "general"
+    },
+    {
+      "id": "light_cameo_black_pool",
+      "label": "🎭 Cameo Isolated Pool (Bright Figure Carved Out of Deep Darkness)",
+      "group": "Light · Dramatic & Storytelling",
+      "rule": "tightly focused overhead and key pool illuminating only the sculpted subject in warm clarity while the surrounding walls fall away into deep shadow",
+      "domain": "general"
+    },
+    {
+      "id": "light_kicker_cheek_slice",
+      "label": "✨ Hard Side-Back Kicker (Razor Cheekbone & Jaw Accent)",
+      "group": "Light · Dramatic & Storytelling",
+      "rule": "crisp side-back kicker light slicing a bright metallic ribbon along the far jawline, cheekbone, and shoulder contour",
+      "domain": "general"
     }
   ]
 }

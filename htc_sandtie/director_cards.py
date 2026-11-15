@@ -7,75 +7,191 @@ import re
 
 from . import catalogs as _cat
 
+_TIER_ALIASES = {
+    "motion": {
+        "freeze": "freeze", "still": "freeze",
+        "slow": "slow", "small": "slow",
+        "natural": "natural", "nat": "natural", "medium": "natural",
+        "brisk": "brisk", "fast": "brisk",
+        "max": "max", "explosive": "max", "large": "max",
+    },
+    "energy": {
+        "hush": "hush", "hushed": "hush",
+        "calm": "calm", "small": "calm",
+        "steady": "steady", "natural": "steady", "medium": "steady",
+        "charged": "charged", "high": "charged",
+        "peak": "peak", "large": "peak",
+    },
+    "expression": {
+        "stoic": "stoic", "deadpan": "stoic",
+        "subtle": "subtle", "small": "subtle",
+        "natural": "natural", "nat": "natural", "medium": "natural",
+        "vivid": "vivid",
+        "theatrical": "theatrical", "theat": "theatrical", "large": "theatrical",
+    },
+    "life": {
+        "lock": "lock", "locked": "lock",
+        "subtle": "subtle", "small": "subtle",
+        "natural": "natural", "nat": "natural", "medium": "natural",
+        "alive": "alive",
+        "hyper": "hyper", "large": "hyper",
+    },
+}
+
+
+def normalize_perf_level(axis: str, raw, fallback: str = "") -> str:
+    """Normalize numeric (-2..+2), 5-tier label, or legacy small/medium/large to canonical tier."""
+    ax = str(axis or "energy").strip().lower()
+    aliases = _TIER_ALIASES.get(ax, {})
+    ordered = {
+        "motion": ("freeze", "slow", "natural", "brisk", "max"),
+        "energy": ("hush", "calm", "steady", "charged", "peak"),
+        "expression": ("stoic", "subtle", "natural", "vivid", "theatrical"),
+        "life": ("lock", "subtle", "natural", "alive", "hyper"),
+    }.get(ax, ("freeze", "slow", "natural", "brisk", "max"))
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+        v = float(raw)
+        idx = 0 if v <= -1.25 else (1 if v <= -0.25 else (2 if v < 0.75 else (3 if v < 1.5 else 4)))
+        return ordered[idx]
+    s = str(raw or "").strip().lower()
+    if s:
+        try:
+            v = float(s)
+            idx = 0 if v <= -1.25 else (1 if v <= -0.25 else (2 if v < 0.75 else (3 if v < 1.5 else 4)))
+            return ordered[idx]
+        except ValueError:
+            pass
+        if s in aliases:
+            return aliases[s]
+    fb = str(fallback or "").strip().lower()
+    if fb in aliases:
+        return aliases[fb]
+    return ordered[2]
+
+
 LIFE_RULES = {
-    "small": (
-        "LIFE (small): The frame stays continuously alive. Subjects blink, breathe visibly, and shift their weight naturally "
-        "while one or two small details in the background move each beat."
-    ),
-    "medium": (
-        "LIFE (medium): The world moves behind the subjects and every person is physically alive inside it. In every beat, "
-        "give each subject active micro-business with their hands, props, eyes, and breath while the background runs "
-        "subtle environmental motion."
-    ),
-    "large": (
-        "LIFE (large — MAX INTERACTIVITY): Every layer of the frame hums with continuous kinetic life and tactile business! "
-        "Subjects actively manipulate props, eyewear, drinks, hair, or clothing with their fingers, shift weight dynamically, "
-        "and engage the camera lens while background lights, air, and surfaces react around them."
-    ),
+    "lock": "LIFE (locked): Hold poised stillness with natural blinks and quiet breathing.",
+    "subtle": "LIFE (subtle): Subjects blink and breathe naturally while one or two subtle details stir in the background.",
+    "small": "LIFE (small): Subjects blink and breathe naturally while one or two subtle details stir in the background.",
+    "natural": "LIFE (natural): Subjects blink, breathe naturally, and shift gaze while ambient air, light, or background details stir gently.",
+    "medium": "LIFE (medium): Subjects blink, breathe naturally, and shift gaze while ambient air, light, or background details stir gently.",
+    "alive": "LIFE (alive): Natural breathing, lively hand/eye business on props or clothing, swaying hair/fabric, and active background movement.",
+    "hyper": "LIFE (hyper): Continuous reactive hair, fabric, props, ambient light shifts, and background movement around every subject.",
+    "large": "LIFE (large): Continuous reactive hair, fabric, props, ambient light shifts, and background movement around every subject.",
 }
 
 LIFE_RULES_POSE_LOCKED = {
-    "small": (
-        "LIFE (small): The frame stays continuously alive with visible breathing in the ribcage and shoulders and subtle ambient motion in the background."
-    ),
-    "medium": (
-        "LIFE (medium): Every person is physically alive inside their pose — visible breath rising and falling in the chest and shoulders, skin highlights shifting in the light, and subtle environmental motion in the background."
-    ),
-    "large": (
-        "LIFE (large): Every layer of the frame hums with continuous physical life — deep rhythmic breathing across the ribcage and shoulders, natural skin sheen and soft-tissue momentum reacting to every movement, and active ambient light and surface detail in the room."
-    ),
+    "lock": "LIFE (locked): Quiet ribcage breathing and steady skin highlights while holding pose alignment.",
+    "subtle": "LIFE (subtle): Visible chest and shoulder breathing with subtle ambient light or steam in the room.",
+    "small": "LIFE (small): Visible chest and shoulder breathing with subtle ambient light or steam in the room.",
+    "natural": "LIFE (natural): Steady deep chest and shoulder breathing, natural skin sweat/sheen, and gentle room movement.",
+    "medium": "LIFE (medium): Steady deep chest and shoulder breathing, natural skin sweat/sheen, and gentle room movement.",
+    "alive": "LIFE (alive): Deep rhythmic breathing, dewy skin sheen, reactive breasts/glutes, and live ambient light or steam.",
+    "hyper": "LIFE (hyper): Heavy ribcage heaving, glossy wet skin highlights, lively breast/glute recoil, and swirling steam or light around them.",
+    "large": "LIFE (large): Heavy ribcage heaving, glossy wet skin highlights, lively breast/glute recoil, and swirling steam or light around them.",
+}
+
+MOTION_RULES_GEN = {
+    "freeze": "MOTION (freeze / minimal): Keep body travel minimal — poised small adjustments, anchored stance, steady framing.",
+    "slow": "MOTION (slow): Deliberate, unhurried movement and smooth, lingering gestures.",
+    "natural": "MOTION (natural): Grounded lifelike movement speed and clean weight shifts between beats.",
+    "brisk": "MOTION (brisk): Crisp athletic movement — decisive steps, sharp gestures, and energetic follow-through.",
+    "max": "MOTION (max velocity): High-speed kinetic action — fast full-body travel, rapid snaps, and dynamic camera follow.",
+}
+
+MOTION_RULES_SEX = {
+    "freeze": "PACE (still grind / close hold): Tight close hip pressure and slow subtle grinding, keeping cock buried deep.",
+    "slow": "PACE (slow & deep): Unhurried, lingering full-length strokes or oral bobs with steady hand grip on hips or waist.",
+    "natural": "PACE (steady): Smooth continuous full-length thrusts, rides, or oral bobs with firm concrete hand grips.",
+    "brisk": "PACE (brisk escalation): Faster, harder full-length strokes driving deeper with tight hip or hair grips.",
+    "max": "PACE (fast hard drive): Rapid, hard full-depth pounding with heavy breast bounce and loud skin slaps.",
 }
 
 ENERGY_RULES_GEN = {
-    "small": "ENERGY (small): Unhurried, grounded, and deliberate pacing. Movements flow smoothly with relaxed posture, lingering eye contact, and soft, intimate vocal delivery.",
-    "medium": "ENERGY (medium): Punchy, dynamic, and physically committed! Subjects move with crisp momentum, decisive hand gestures, sharp posture shifts between beats, and spirited expressive delivery.",
-    "large": "ENERGY (large — HIGH VELOCITY): Maximum kinetic momentum and dramatic contrast! Pack every beat with decisive physical actions — sharp posture snaps, torso leans across space, brisk hand choreography, and expressive vocal intensity.",
+    "hush": "INTENSITY (hushed): Quiet, understated tension, soft breath, and low-key delivery.",
+    "calm": "INTENSITY (calm): Grounded relaxed composure and natural conversational delivery.",
+    "small": "INTENSITY (calm): Grounded relaxed composure and natural conversational delivery.",
+    "steady": "INTENSITY (steady): Clear dramatic focus, honest stakes, and engaged responsive delivery.",
+    "medium": "INTENSITY (steady): Clear dramatic focus, honest stakes, and engaged responsive delivery.",
+    "charged": "INTENSITY (charged): Spirited emotional urgency, sharp breath, and bold vocal projection.",
+    "peak": "INTENSITY (peak): Full dramatic intensity, sharp contrast, and commanding physical/vocal commitment.",
+    "large": "INTENSITY (peak): Full dramatic intensity, sharp contrast, and commanding physical/vocal commitment.",
 }
 
 ENERGY_RULES_SEX = {
-    "small": "ENERGY (small — SLOW & DEEP RHYTHM): Keep the physical pace slow, unhurried, and lingering along the active pose axis, with smooth full-length strokes, steady supporting hand placement, and natural breathing.",
-    "medium": "ENERGY (medium — RHYTHMIC & PROGRESSIVE ESCALATION): Start already in active rhythmic motion along the locked pose axis, then progressively increase the speed and depth of penetration to cover the full length of the erect shaft while maintaining each hand's assigned job.",
-    "large": "ENERGY (large — RIGOROUS FULL-DEPTH DRIVE): Drive rigorous, high-speed, full-depth strokes along the locked pose axis covering the entire length of the erect shaft, with firm supporting hand grips and intense physical momentum.",
+    "hush": "INTENSITY (hushed): Soft whispered closeness, quiet breaths, and lingering eye contact.",
+    "calm": "INTENSITY (calm): Unhurried sensual focus, steady breathing, and lingering skin contact.",
+    "small": "INTENSITY (small): Unhurried sensual focus, steady breathing, and lingering skin contact.",
+    "steady": "INTENSITY (steady): Rising physical heat, heavier breaths, and eager body tension.",
+    "medium": "INTENSITY (medium): Rising physical heat, heavier breaths, and eager body tension.",
+    "charged": "INTENSITY (charged): Urgent heated arousal, loud gasps, and tight clutching hands.",
+    "peak": "INTENSITY (peak): Overwhelmed raw climax drive, ragged panting, flushed skin, and trembling thighs.",
+    "large": "INTENSITY (large): Overwhelmed raw climax drive, ragged panting, flushed skin, and trembling thighs.",
+}
+
+EXPRESSION_FLAVOR_RULES = {
+    "auto": "",
+    "stoic": "EXPRESSION READ (stoic / cold): Cool, composed deadpan restraint — steady narrowed eyes and minimal mouth movement.",
+    "warm": "EXPRESSION READ (warm / sincere): Genuine open warmth — soft eyes, relaxed brows, and an easy smile.",
+    "sly": "EXPRESSION READ (sly / playful): Knowing smirk — one-corner smile, lifted brow, and teasing eye contact.",
+    "tense": "EXPRESSION READ (tense / dread): Tight vigilance — alert darting eyes, set jaw, and brow tension.",
+    "intense": "EXPRESSION READ (fierce / intense): Sharp raw focus — piercing eyes, parted lips, and fierce conviction.",
+    "sensual": "EXPRESSION READ (sensual / intimate): Heavy-lidded heat — parted lips, lingering gaze, and soft breath.",
 }
 
 EXPRESSION_RULES_GEN = {
-    "small": "EXPRESSION (small): Understated, naturalistic micro-acting in the eyes, brows, and lips that shifts cleanly when the beat turns.",
-    "medium": "EXPRESSION (medium): Clear, vivid facial acting! Every beat shows a distinct readable emotional shift in the eyes, eyebrows, and mouth (a slow knowing smirk, a sharp double-take, a teasing lip-bite, or an arched brow).",
-    "large": "EXPRESSION (large — THEATRICAL MAX): Vivid, charismatic facial acting straight to camera or scene partner! Contrast distinct facial states cleanly across beats — poised deadpan shifting into wide-eyed surprise or amused confidence.",
+    "stoic": "EXPRESSION (stoic): Minimal calm facial movement — steady gaze and subtle eye shifts.",
+    "subtle": "EXPRESSION (subtle): Understated naturalistic eye, brow, and mouth shifts when the beat turns.",
+    "small": "EXPRESSION (small): Understated naturalistic eye, brow, and mouth shifts when the beat turns.",
+    "natural": "EXPRESSION (natural): Clear readable facial reactions across eyes, brows, and mouth.",
+    "medium": "EXPRESSION (medium): Clear readable facial reactions across eyes, brows, and mouth.",
+    "vivid": "EXPRESSION (vivid): Expressive charismatic acting contrasting poised glances with clear brow and smile turns.",
+    "theatrical": "EXPRESSION (theatrical): Bold high-contrast facial acting straight to partner or lens.",
+    "large": "EXPRESSION (large): Bold high-contrast facial acting straight to partner or lens.",
 }
 
 EXPRESSION_RULES_SEX = {
-    "small": "EXPRESSION (small): Genuine, intimate sensual pleasure — half-lidded bedroom eyes, soft natural breathing, and unbroken warm focus consistent with the active pose.",
-    "medium": "EXPRESSION (medium): Heated, responsive arousal matching the active pose — arched brows, focused or half-lidded eyes, and breathless vocal pleasure.",
-    "large": "EXPRESSION (large — INTENSE EROTIC PLEASURE): Expressive physical and facial intensity matching the active pose — arched brows, glistening eyes, flushed skin, and breathless gasps or moans as speed and depth build.",
+    "stoic": "EXPRESSION (composed heat): Controlled intense eye contact with parted lips and steady breathing.",
+    "subtle": "EXPRESSION (subtle): Half-lidded eyes, soft parted lips, and warm steady focus.",
+    "small": "EXPRESSION (small): Half-lidded eyes, soft parted lips, and warm steady focus.",
+    "natural": "EXPRESSION (natural): Flushed cheeks, arched brows, half-lidded eyes, and breathless gasps.",
+    "medium": "EXPRESSION (medium): Flushed cheeks, arched brows, half-lidded eyes, and breathless gasps.",
+    "vivid": "EXPRESSION (vivid): Arched brows, wet upturned eyes, flushed skin, parted lips, and breathless gasps.",
+    "theatrical": "EXPRESSION (peak pleasure): Overwhelmed climax face — glistening eyes, flushed chest, wide parted lips, and deep moans.",
+    "large": "EXPRESSION (large): Overwhelmed climax face — glistening eyes, flushed chest, wide parted lips, and deep moans.",
 }
 
 EXPRESSION_RULES_SEX_ORAL = {
-    "small": "EXPRESSION (oral — small): Half-lidded upward gaze and hollowed cheeks with her lips continuously sealed around the shaft.",
-    "medium": "EXPRESSION (oral — medium): Arched brows, glistening eyes, hollowed cheeks, and visible throat bulge while her lips stay sealed around the shaft as she gags and moans.",
-    "large": "EXPRESSION (oral — large): Watery glistening eyes, deeply hollowed cheeks, and visible throat bulge as she gags and moans around the full length of the shaft, switching to breathless panting only after an explicit pullout.",
+    "stoic": "EXPRESSION (oral — focused): Steady upward gaze and hollowed cheeks with lips sealed tightly around his cock.",
+    "subtle": "EXPRESSION (oral — subtle): Half-lidded upward gaze and hollowed cheeks with lips sealed tightly around his cock.",
+    "small": "EXPRESSION (oral — small): Half-lidded upward gaze and hollowed cheeks with lips sealed tightly around his cock.",
+    "natural": "EXPRESSION (oral — natural): Arched brows, glistening eyes, hollowed cheeks, and throat bulge while lips stay sealed around his cock.",
+    "medium": "EXPRESSION (oral — medium): Arched brows, glistening eyes, hollowed cheeks, and throat bulge while lips stay sealed around his cock.",
+    "vivid": "EXPRESSION (oral — vivid): Watery upturned eyes, deeply hollowed cheeks, drooling chin, and throat bulge while sucking his cock.",
+    "theatrical": "EXPRESSION (oral — intense): Watery eyes, deeply hollowed cheeks, heavy saliva, and throat bulge taking his full cock, panting only after pulling off.",
+    "large": "EXPRESSION (oral — large): Watery eyes, deeply hollowed cheeks, heavy saliva, and throat bulge taking his full cock, panting only after pulling off.",
 }
 
 EXPRESSION_RULES_SEX_PROGRESSIVE = {
-    "small": "EXPRESSION (progressive setup — small): In Beat 1, keep a calm, focused expression on her opening activity; in Beat 2 and Beat 3, shift into half-lidded sensual pleasure.",
-    "medium": "EXPRESSION (progressive setup — medium): In Beat 1 (Opening Setup), maintain calm, steady focus on her task; in Beat 2 (Entry & Escalation), her composure cracks as she bites her lower lip and gasps; in Beat 3 (Payoff), open into breathless pleasure.",
-    "large": "EXPRESSION (progressive setup — large): In [Shot 1] and Beat 1, keep her expression calm and focused on her opening task; in Beat 2, her composure cracks with widened eyes, arched brows, and bitten lower lip; in Beat 3, reach full overstimulated climax.",
+    "stoic": "EXPRESSION (progressive setup — controlled): Calm composure in Beat 1, easing gradually into quiet half-lidded warmth.",
+    "subtle": "EXPRESSION (progressive setup — subtle): Calm focused task in Beat 1; half-lidded warmth across Beats 2 and 3.",
+    "small": "EXPRESSION (progressive setup — small): Calm focused task in Beat 1; half-lidded warmth across Beats 2 and 3.",
+    "natural": "EXPRESSION (progressive setup — natural): Calm focus in Beat 1; bitten lower lip and gasp in Beat 2; flushed breathless pleasure in Beat 3.",
+    "medium": "EXPRESSION (progressive setup — medium): Calm focus in Beat 1; bitten lower lip and gasp in Beat 2; flushed breathless pleasure in Beat 3.",
+    "vivid": "EXPRESSION (progressive setup — vivid): Calm opening focus in Beat 1; widened eyes and parted-lip gasp in Beat 2; full flushed climax in Beat 3.",
+    "theatrical": "EXPRESSION (progressive setup — peak): Calm opening focus in Beat 1; sharp widened-eye gasp in Beat 2; full overwhelmed climax in Beat 3.",
+    "large": "EXPRESSION (progressive setup — large): Calm opening focus in Beat 1; sharp widened-eye gasp in Beat 2; full overwhelmed climax in Beat 3.",
 }
 
 EXPRESSION_RULES_REAR = {
-    "small": "EXPRESSION (rear / facing-away body acting): Expressive physical poise through a relaxed arched spine, steady breathing in the shoulders, and fingers resting naturally on the surface ahead while keeping torso and head facing forward.",
-    "medium": "EXPRESSION (rear / facing-away body acting): Vivid physical arousal expressed through a deepening lumbar arch, fingers gripping the sheets or thighs ahead, and responsive hip and glute rhythm while keeping shoulders, torso, and head facing forward away from the lens.",
-    "large": "EXPRESSION (rear / facing-away body acting): High-intensity physical ecstasy expressed through a steep spine bow, shoulders drawing back as fingers clench the pillow or surface ahead, toes curling, and trembling thighs while keeping torso and head facing forward away from the lens.",
+    "stoic": "EXPRESSION (rear / facing-away poise): Steady arched back and calm hands braced ahead while torso and head face forward.",
+    "subtle": "EXPRESSION (rear / facing-away): Softly arched spine, steady shoulder breath, and light finger grip ahead while torso and head face forward.",
+    "small": "EXPRESSION (rear / facing-away): Softly arched spine, steady shoulder breath, and light finger grip ahead while torso and head face forward.",
+    "natural": "EXPRESSION (rear / facing-away): Deepening arched back, fingers gripping sheets or hips ahead, and responsive hip rhythm facing forward away from lens.",
+    "medium": "EXPRESSION (rear / facing-away): Deepening arched back, fingers gripping sheets or hips ahead, and responsive hip rhythm facing forward away from lens.",
+    "vivid": "EXPRESSION (rear / facing-away): Steep arched spine, clenched fingers on the surface ahead, curling toes, and trembling thighs facing forward away from lens.",
+    "theatrical": "EXPRESSION (rear / facing-away peak): Steep arched back, white-knuckled grip ahead, curling toes, and trembling thighs facing forward away from lens.",
+    "large": "EXPRESSION (rear / facing-away peak): Steep arched back, white-knuckled grip ahead, curling toes, and trembling thighs facing forward away from lens.",
 }
 
 _PROGRESSIVE_SETUP_RX = re.compile(
@@ -87,16 +203,23 @@ _PROGRESSIVE_SETUP_RX = re.compile(
 )
 
 _SEX_RX = re.compile(
-    r"\b(?:sex\w*|nude|naked|topless|bottomless|undress\w*|strip\w*|flash\w*|peek\w*|cowgirl|missionary|doggy|prone\s*bone|"
-    r"spooning|lotus|blowjob|bj|deepthroat\w*|throatfuck\w*|facefuck\w*|handjob|footjob|titfuck|paizuri|tittyfuck|titjob|"
-    r"cunnilingus|facesit\w*|queening|69|sixty[- ]?nine|pussy|labia|clit\w*|cock|dick|penis|shaft|glans|balls|scrotum|"
-    r"breasts?|tits|boobs|nipples?|cleavage|underboob|sideboob|ass|butt|glutes?|cheeks|asshole|anus|anal|starfish|pucker|"
-    r"dildo|vibrator|magic\s*wand|strap[- ]?on|pegging|plug|butt\s*plug|beads|orgasm\w*|cum\w*|climax\w*|creampie|"
-    r"facial|bukkake|swallow\w*|squir\w*|straddl\w*|grind\w*|thrust\w*|penetrat\w*|ride|riding|twerk\w*|booty|"
-    r"erotic|fetish|bdsm|femdom|domme|submissive|bondage|handcuffs?|ballgag|gag\w*|collar|leash|whip|crop|spank\w*|"
-    r"slap\w*|hair[- ]?pull\w*|chok\w*|joi|cei|sph|findom|cuck\w*|edging|ruined|armpit|"
-    r"foot\s*worship|sole\w*|toes?|pantyhose|stockings?|panties|thong|bikini|lingerie|latex|oiled|saliva|spit\w*|drool\w*|"
-    r"moan\w*|groan\w*|dirty\s*talk|arous\w*|seduc\w*)\b",
+    r"\b(?:nsfw|explicit|sex(?:ual|y)?|porn\w*|erotic\w*|nude|naked|topless|bottomless|"
+    r"undress\w*|strip\s*tease|strip(?:s|ping)\s+(?:down|off|naked|bare)|"
+    r"cowgirl|reverse\s*cowgirl|missionary|doggy\s*(?:style|pose)?|prone\s*bone|"
+    r"spooning|lotus\s*(?:sex|ride|position)|blow\s?job|\bbj\b|deep\s*throat\w*|throat\s*fuck\w*|face\s*fuck\w*|"
+    r"hand\s?job|foot\s?job|tit\s?fuck|paizuri|titty\s?fuck|tit\s?job|"
+    r"cunnilingus|facesit\w*|queening|69\s+position|sixty[- ]?nine|"
+    r"pussy|labia|clit\w*|cock|dick|penis|erect\s+shaft|glans|scrotum|testicles|"
+    r"bare\s+(?:breasts?|tits|boobs|ass|glutes?|pussy)|nipples?|underboob|sideboob|"
+    r"asshole|anus|anal|butt\s*plug|anal\s+beads|dildo|vibrator|magic\s*wand|strap[- ]?on|pegging|"
+    r"orgasm\w*|cum(?:s|ming|shot)?|climax\w*|creampie|bukkake|"
+    r"facial\s+(?:cum|finish|glaze)|squirt(?:s|ing)?\s+(?:orgasm|climax|fluid)|"
+    r"(?:cock|dick|dildo|lap|face)\s*rid(?:e|ing)|rid(?:e|ing)\s+(?:him|his\s+(?:cock|dick|shaft)|her\s+face)|"
+    r"straddl(?:e|es|ing)\s+(?:his|her)\s+(?:lap|hips|waist|face)|"
+    r"thrust(?:s|ing)\s+(?:into|inside|deep|hips)|penetrat\w*|"
+    r"fetish|bdsm|femdom|domme|bondage|shibari|ballgag|spank\w*|foot\s*worship|ass\s*worship|"
+    r"(?:ass|butt|face|tit|breast)\s*slap\w*|slap(?:s|ping)\s+(?:her|his)\s+(?:ass|glutes?|tits|breasts)|"
+    r"joi|cei|sph|findom|cuck\w*|dirty\s*talk|panties\s+(?:pulled\s+aside|ripped)|bra\s+unhook\w*)\b",
     re.I,
 )
 
@@ -155,6 +278,7 @@ DP_EXPLICIT_IDS = {
     "multi_mmf_standing_sandwich_dp",
     "multi_mmf_double_vaginal_and_anal_standing_lift_carry", "multi_mmf_airtight_triple",
     "cont_mmf_dp_cowgirl_mount_to_rear_anal_entry_to_sandwich_ride",
+    "toy_double_ended_solo_pussy_and_anal",
 }
 
 REAR_EXPLICIT_IDS = {
@@ -187,6 +311,16 @@ REAR_EXPLICIT_IDS = {
     "cont_bed_massage_oil_to_prone_bone_climax",
     "cont_strapon_harness_buckle_to_pegging_doggy",
     "cont_couch_undress_bra_toss_to_reverse_cowgirl", "solo_prone_pillow_grinding_hump",
+    "pov_male_reverse_cowgirl_ass_bounce", "reverse_cowgirl_lean_back_hands_on_ankles",
+    "doggy_pillow_wedge_hips_elevated_arch", "doggy_doorframe_standing_brace_grip",
+    "doggy_bed_edge_standing_thrusts", "doggy_prone_frog_leg_flat_arch",
+    "doggy_mirror_couch_knee_up_look", "doggy_car_backseat_bent_over_headrest",
+    "climax_doggy_pullout_pussy_and_ass_drip",
+    "cont_elevator_coat_flash_to_mirror_rear_entry",
+    "cont_stairwell_handrail_kiss_to_skirt_flip_doggy",
+    "cont_yacht_shower_rinse_to_sunpad_doggy",
+    "cont_yoga_mat_splits_stretch_to_prone_entry",
+    "toy_thrusting_machine_all_fours_handsfree",
 }
 
 FRONT_FACING_REAR_ENTRY_EXPLICIT_IDS = {
@@ -209,10 +343,12 @@ FRONT_FACING_REAR_ENTRY_EXPLICIT_IDS = {
     "bdsm_wrist_cuff_standing_mirror_control", "handjob_reverse_over_shoulder_stroke",
     "lesbian_mirror_behind_breast_cup_finger", "lesbian_sixty_nine_side_mutual_lick",
     "cont_kiss_strip_jacket_to_desk_bend_doggy",
+    "pov_male_spooning_lookback_neck_kiss", "doggy_couch_armrest_draped_lookback",
 }
 
 OVER_SHOULDER_EXPLICIT_IDS = {
     "ass_worship_cheek_spread_pov", "worship_oiled_glute_and_sole_arch_footjob",
+    "doggy_couch_armrest_draped_lookback", "pov_male_spooning_lookback_neck_kiss",
 }
 
 MIRROR_EXPLICIT_IDS = {
@@ -223,6 +359,10 @@ MIRROR_EXPLICIT_IDS = {
     "mirror_selfie_rear_arch_tease", "bdsm_wrist_cuff_standing_mirror_control",
     "lesbian_mirror_behind_breast_cup_finger", "solo_mirror_standing_spread_touch",
     "cont_gym_stretch_leggings_peel_to_bench_doggy",
+    "mirror_pov_phone_recording_doggy_selfie", "undress_silk_bathrobe_shoulder_drop_reveal",
+    "undress_elevator_coat_flash_lingerie", "mirror_narcissist_admire_self_touch",
+    "titfuck_standing_mirror_cleavage_squeeze", "doggy_mirror_couch_knee_up_look",
+    "cont_elevator_coat_flash_to_mirror_rear_entry", "multi_pos_3cut_morning_bed_shower_vanity",
 }
 
 MIRROR_CAMERA_IDS = {
@@ -231,8 +371,17 @@ MIRROR_CAMERA_IDS = {
     "mirror_dual_subject_eye_reflection",
 }
 
-REAR_POSE_IDS = {"dance_bed_prone_ankle_cross_sway"}
-OVER_SHOULDER_POSE_IDS = {"dance_rear_arch_glute_shimmy_lookback"}
+REAR_POSE_IDS = {
+    "dance_bed_prone_ankle_cross_sway",
+    "dance_twerk_allfours_bed_bounce",
+    "dance_wall_squat_twerk_glance",
+}
+OVER_SHOULDER_POSE_IDS = {
+    "dance_rear_arch_glute_shimmy_lookback",
+    "dance_kpop_sticky_arch_hip_sway_wink",
+    "dance_heels_walkup_180_hairwhip",
+    "dance_duet_back_to_front_club_grind",
+}
 
 POV_MALE_EXPLICIT_IDS = {
     "pov_male_cowgirl_grind", "pov_male_doggy", "pov_male_missionary",
@@ -242,9 +391,17 @@ POV_MALE_EXPLICIT_IDS = {
     "ass_worship_cheek_spread_pov", "good_boy_mommy_praise_pet",
     "boot_heel_trample_pov", "thigh_scissor_crush_pov", "giantess_macro_towering_pov",
     "bdsm_under_desk_heels_worship_collar", "bdsm_face_worship_heel_chest_press",
+    "pov_male_reverse_cowgirl_ass_bounce", "pov_male_blowjob_kneeling_eye_lock",
+    "pov_male_mating_press_folded_ankles", "pov_male_titfuck_cleavage_squeeze",
+    "pov_male_handjob_double_twist_eye_lock", "pov_male_footjob_nylon_soles_sofa",
+    "pov_male_spooning_lookback_neck_kiss", "findom_brat_boss_foot_rest_tease",
 }
 
-POV_FEMALE_EXPLICIT_IDS = set()
+POV_FEMALE_EXPLICIT_IDS = {
+    "pov_female_looking_up_missionary",
+    "pov_female_cowgirl_hands_on_chest",
+    "pov_female_standing_wall_pin_lookup",
+}
 
 ORAL_OCCUPIED_EXPLICIT_IDS = {
     "blowjob_drool_pullback", "deepthroat_to_smile_facial",
@@ -268,12 +425,16 @@ ORAL_OCCUPIED_EXPLICIT_IDS = {
     "cont_gangbang_kneeling_double_handjob_to_alternating_throat_to_bukkake",
     "cont_under_desk_two_hand_stroke_to_deepthroat_to_lap_cowgirl",
     "cont_harem_3girl_oil_rub_to_triple_tongue_shaft_worship_to_shared_glaze",
+    "pov_male_blowjob_kneeling_eye_lock", "oral_edge_of_bed_upside_down_hang_glide",
+    "oral_shower_kneeling_wet_stream_deepthroat", "oral_morning_duvet_tent_wake_up_suck",
+    "oral_balls_suck_and_perineum_lick_stroke", "bdsm_ballgag_drool_chin_grip_worship",
 }
 
 CUNNILINGUS_ONLY_EXPLICIT_IDS = {
     "cunnilingus_calm",
     "cont_cunnilingus_thigh_grip_to_two_finger_gspot_to_squirt",
     "multi_fff_daisy_chain_triad_cunnilingus", "multi_ffm_missionary_cunnilingus_daisy",
+    "cunnilingus_standing_wall_lift_thigh_hook",
 }
 
 NON_SOLO_BJ_ORAL_IDS = {
@@ -296,6 +457,9 @@ NON_SOLO_BJ_ORAL_IDS = {
     "oral_side_profile_throat_bulge_drool",
     "cont_handjob_lick_to_deepthroat_to_swallow",
     "rough_kneeling_collar_leash_yank_throatfuck_drool",
+    "pov_male_blowjob_kneeling_eye_lock", "oral_edge_of_bed_upside_down_hang_glide",
+    "oral_shower_kneeling_wet_stream_deepthroat", "oral_morning_duvet_tent_wake_up_suck",
+    "oral_balls_suck_and_perineum_lick_stroke", "bdsm_ballgag_drool_chin_grip_worship",
 }
 
 NON_VAGINAL_PARTNER_EXPLICIT_IDS = {
@@ -322,6 +486,21 @@ NON_VAGINAL_PARTNER_EXPLICIT_IDS = {
     "climax_breasts_and_collarbone_pearl", "climax_inner_thigh_and_pussy_glaze",
     "climax_ruined_multiple_twitch_drip", "climax_double_partner_simultaneous_glaze",
     "climax_creampie_gravity_drip_spread", "cont_strapon_harness_buckle_to_pegging_doggy",
+    "pov_male_blowjob_kneeling_eye_lock", "pov_male_titfuck_cleavage_squeeze",
+    "pov_male_handjob_double_twist_eye_lock", "pov_male_footjob_nylon_soles_sofa",
+    "toy_textured_flashlight_sleeve_handjob", "oral_edge_of_bed_upside_down_hang_glide",
+    "oral_shower_kneeling_wet_stream_deepthroat", "oral_morning_duvet_tent_wake_up_suck",
+    "oral_balls_suck_and_perineum_lick_stroke", "titfuck_standing_mirror_cleavage_squeeze",
+    "cunnilingus_standing_wall_lift_thigh_hook", "handjob_under_blanket_morning_tease",
+    "clothed_dry_hump_lace_panties_grind", "fingering_over_panties_then_slip_aside",
+    "footjob_double_arch_soapy_shower", "handjob_two_hand_balls_cup_slow_milk",
+    "worship_armpit_and_sweat_neck_kiss", "worship_full_body_warm_oil_massage_glide",
+    "worship_champagne_body_pour_chest_lick", "worship_sheer_nylon_pantyhose_thigh_rub",
+    "worship_silk_sheets_skin_friction_slide", "bdsm_standing_overhead_spreader_tie",
+    "bdsm_riding_crop_thigh_tap_tease", "bdsm_nipple_clamps_chain_tug_arch",
+    "bdsm_ballgag_drool_chin_grip_worship", "bdsm_facesit_throne_latex_smother",
+    "climax_standing_chest_and_stomach_ropes", "climax_facial_parted_lips_tongue_glaze",
+    "climax_doggy_pullout_pussy_and_ass_drip",
 }
 
 NON_VOCAL_DEFAULT_EXPLICIT_IDS = (
@@ -467,6 +646,57 @@ NON_VOCAL_DEFAULT_EXPLICIT_IDS = (
         "cont_strapon_harness_buckle_to_pegging_doggy",
         "cont_lesbian_bathtub_foam_kiss_to_scissoring",
         "cont_couch_undress_bra_toss_to_reverse_cowgirl",
+        "multi_pos_gym_stretch_to_shower_to_bed",
+        "multi_pos_yacht_deck_to_cabin_oral_to_sunset_cowgirl",
+        "multi_pos_office_under_desk_to_chair_spin_to_glass_wall",
+        "multi_pos_lesbian_sofa_makeout_to_69_to_double_dildo",
+        "pov_male_reverse_cowgirl_ass_bounce", "pov_male_blowjob_kneeling_eye_lock",
+        "pov_male_mating_press_folded_ankles", "pov_male_titfuck_cleavage_squeeze",
+        "pov_male_handjob_double_twist_eye_lock", "pov_male_footjob_nylon_soles_sofa",
+        "pov_male_spooning_lookback_neck_kiss", "pov_female_looking_up_missionary",
+        "pov_female_cowgirl_hands_on_chest", "pov_female_standing_wall_pin_lookup",
+        "mirror_pov_phone_recording_doggy_selfie", "toy_magic_wand_clit_overstim_arch",
+        "toy_rose_air_pulse_sucker_climax", "toy_glass_dildo_gspot_ribbed_thrust",
+        "toy_thrusting_machine_all_fours_handsfree", "toy_remote_panties_vibrator_couch_tease",
+        "toy_vibrator_during_missionary_clit_press", "toy_textured_flashlight_sleeve_handjob",
+        "toy_double_ended_solo_pussy_and_anal", "mirror_narcissist_admire_self_touch",
+        "oral_edge_of_bed_upside_down_hang_glide", "oral_shower_kneeling_wet_stream_deepthroat",
+        "oral_morning_duvet_tent_wake_up_suck", "oral_balls_suck_and_perineum_lick_stroke",
+        "titfuck_standing_mirror_cleavage_squeeze", "cunnilingus_standing_wall_lift_thigh_hook",
+        "cowgirl_lotus_wrap_around_chest_embrace", "cowgirl_side_saddle_hip_twist_ride",
+        "reverse_cowgirl_lean_back_hands_on_ankles", "cowgirl_chair_lap_desk_straddle_bounce",
+        "cowgirl_bathtub_faucet_warm_ride", "cowgirl_lazy_morning_slow_roll",
+        "doggy_pillow_wedge_hips_elevated_arch", "doggy_doorframe_standing_brace_grip",
+        "doggy_couch_armrest_draped_lookback", "doggy_bed_edge_standing_thrusts",
+        "doggy_prone_frog_leg_flat_arch", "doggy_mirror_couch_knee_up_look",
+        "doggy_car_backseat_bent_over_headrest", "missionary_coital_alignment_high_grind",
+        "missionary_butterfly_bed_edge_pillow", "missionary_morning_under_sheets_tangled",
+        "missionary_hot_tub_edge_recline", "missionary_lazy_side_angled_leg_hook",
+        "missionary_standing_counter_edge_wrap", "handjob_under_blanket_morning_tease",
+        "clothed_dry_hump_lace_panties_grind", "fingering_over_panties_then_slip_aside",
+        "footjob_double_arch_soapy_shower", "handjob_two_hand_balls_cup_slow_milk",
+        "worship_armpit_and_sweat_neck_kiss", "worship_full_body_warm_oil_massage_glide",
+        "worship_champagne_body_pour_chest_lick", "worship_sheer_nylon_pantyhose_thigh_rub",
+        "worship_silk_sheets_skin_friction_slide", "bdsm_standing_overhead_spreader_tie",
+        "bdsm_riding_crop_thigh_tap_tease", "bdsm_nipple_clamps_chain_tug_arch",
+        "bdsm_ballgag_drool_chin_grip_worship", "bdsm_facesit_throne_latex_smother",
+        "climax_standing_chest_and_stomach_ropes", "climax_missionary_deep_pulse_eye_lock",
+        "climax_facial_parted_lips_tongue_glaze", "climax_handsfree_full_body_shiver_orgasm",
+        "climax_doggy_pullout_pussy_and_ass_drip",
+        "cont_elevator_coat_flash_to_mirror_rear_entry",
+        "cont_stairwell_handrail_kiss_to_skirt_flip_doggy",
+        "cont_tub_champagne_sip_to_straddle_foam_ride",
+        "cont_morning_stretch_under_duvet_to_lazy_cowgirl",
+        "cont_yacht_shower_rinse_to_sunpad_doggy",
+        "cont_yoga_mat_splits_stretch_to_prone_entry",
+        "multi_pos_3cut_morning_bed_shower_vanity",
+        "multi_pos_3cut_pov_oral_to_cowgirl_to_facial",
+        "multi_pos_3cut_bdsm_leash_to_paddle_to_mating_press",
+        "multi_pos_3cut_club_booth_to_elevator_to_penthouse",
+        "multi_pos_3cut_titfuck_to_cowgirl_to_creampie",
+        "multi_pos_doggy_missionary_bj",
+        "multi_pos_strip_to_cowgirl",
+        "multi_pos_oral_to_doggy_creampie",
         "multi_pos_gym_stretch_to_shower_to_bed",
         "multi_pos_yacht_deck_to_cabin_oral_to_sunset_cowgirl",
         "multi_pos_office_under_desk_to_chair_spin_to_glass_wall",
@@ -684,8 +914,14 @@ def format_playbook_directive(entry: dict, *, has_camera_or_explicit: bool = Fal
     return f"PLAYBOOK MODULE ({title}): " + " ".join(bits)
 
 
-def dance_vocab_directive(brief: str) -> str:
-    if not brief or not re.search(r"\b(?:dance|dancing|choreo\w*|groove|twerk|hip\s*sway|body\s*wave|gravure|idol)\b", brief, re.I):
+def dance_vocab_directive(brief: str, pose_id: str = "") -> str:
+    pids = [x.lower() for x in _cat.parse_multi_ids(pose_id)]
+    has_dance_pose = any(p.startswith(("dance_", "dvm_", "ensemble_kpop", "ensemble_tiktok", "ensemble_girl_group")) for p in pids)
+    if not has_dance_pose and (not brief or not re.search(
+        r"\b(?:dance|dancing|choreo\w*|groove|twerk|hip\s*sway|body\s*wave|gravure|idol|tiktok|douyin|kemusan|subject\s*three|slickback|jersey\s*club|k[- ]?pop|pole\s*dance|heels|chest\s*pop|waist\s*wine)\b",
+        brief,
+        re.I,
+    )):
         return ""
     dv = _cat.dance_vocab_doc()
     pr = dv.get("pacing_rules") or {}
@@ -699,8 +935,9 @@ def knowledge_primer(has_camera_pick: bool = False, is_pov: bool = False) -> str
     kd = _cat.knowledge_doc().get("know") or {}
     parts = [kd.get("head", "")]
     if not has_camera_pick and not is_pov:
-        parts.extend(kd.get("camera") or [])
-    parts.extend(kd.get("picture") or [])
+        cam_lines = [c for c in (kd.get("camera") or []) if "Tripod Pan" in c or "Background Plate" in c]
+        parts.extend(cam_lines)
+    parts.extend(p for p in (kd.get("picture") or []) if "Lighting" in p)
     if kd.get("write"):
         parts.append(kd["write"])
     return "\n".join(p for p in parts if p)

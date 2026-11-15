@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import math
 import os
 import re
 
@@ -48,10 +49,61 @@ WRITE_MODES = [
     "Instant CPU Tie (0 VRAM)",
 ]
 
-ASPECTS = ["16:9", "9:16"]
+ASPECT_RATIOS = {
+    "21:9 landscape": (21, 9),
+    "16:9 landscape": (16, 9),
+    "3:2 landscape": (3, 2),
+    "4:3 landscape": (4, 3),
+    "5:4 landscape": (5, 4),
+    "1:1 square": (1, 1),
+    "4:5 portrait": (4, 5),
+    "3:4 portrait": (3, 4),
+    "2:3 portrait": (2, 3),
+    "9:16 portrait": (9, 16),
+    "9:21 portrait": (9, 21),
+}
+ASPECTS = list(ASPECT_RATIOS)
+DEFAULT_ASPECT = "16:9 landscape"
 DURATIONS = ["5 s", "6 s", "8 s", "10 s", "12 s", "13 s", "14 s", "15 s"]
 FPS = 24
 CANVAS_MULTIPLE = 32
+CANVAS_AREA_CAP = 768 * 1344
+BASE_SHORT_EDGE = 768
+
+
+def _parse_aspect_ratio(aspect: str) -> tuple[int, int]:
+    raw = str(aspect or DEFAULT_ASPECT).strip()
+    if raw in ASPECT_RATIOS:
+        return ASPECT_RATIOS[raw]
+    m = re.search(r"(\d+)\s*:\s*(\d+)", raw)
+    if m:
+        rw, rh = int(m.group(1)), int(m.group(2))
+        if rw > 0 and rh > 0:
+            return rw, rh
+    if re.search(r"portrait|vertical", raw, re.I):
+        return (9, 16)
+    return ASPECT_RATIOS[DEFAULT_ASPECT]
+
+
+def _aspect_short_label(aspect: str) -> str:
+    rw, rh = _parse_aspect_ratio(aspect)
+    return f"{rw}:{rh}"
+
+
+def _aspect_from_dims(w: int, h: int) -> str:
+    g = math.gcd(int(w), int(h)) or 1
+    rw, rh = int(w) // g, int(h) // g
+    target = float(w) / float(h)
+    best_lbl, best_err = None, 1e9
+    for lbl, (aw, ah) in ASPECT_RATIOS.items():
+        err = abs((aw / float(ah)) - target)
+        if err < best_err:
+            best_err = err
+            best_lbl = lbl
+    if best_lbl and best_err <= 0.04:
+        aw, ah = ASPECT_RATIOS[best_lbl]
+        return f"{aw}:{ah}"
+    return f"{rw}:{rh}"
 
 
 def _parse_dur_seconds(label: str) -> float:
@@ -62,13 +114,20 @@ def _parse_dur_seconds(label: str) -> float:
 
 
 def _snap_dim(px: int) -> int:
-    return max(CANVAS_MULTIPLE, round(int(px) / CANVAS_MULTIPLE) * CANVAS_MULTIPLE)
+    return max(CANVAS_MULTIPLE, int(round(int(px) / CANVAS_MULTIPLE)) * CANVAS_MULTIPLE)
 
 
 def _resolve_canvas_size(aspect: str, width: int, height: int) -> tuple[int, int]:
     if int(width or 0) > 0 and int(height or 0) > 0:
         return _snap_dim(int(width)), _snap_dim(int(height))
-    return (768, 1344) if str(aspect or "16:9") == "9:16" else (1344, 768)
+    rw, rh = _parse_aspect_ratio(aspect)
+    ratio = float(rw) / float(rh)
+    short = float(BASE_SHORT_EDGE)
+    w, h = (short * ratio, short) if ratio >= 1.0 else (short, short / ratio)
+    if w * h > CANVAS_AREA_CAP:
+        scale = math.sqrt(float(CANVAS_AREA_CAP) / (w * h))
+        w, h = w * scale, h * scale
+    return _snap_dim(int(round(w))), _snap_dim(int(round(h)))
 
 
 def _align_frames(dur_s: float) -> int:
@@ -202,12 +261,51 @@ def _collect_conditioning_media(
         tensor = img_by_slot.get(sl) if sl >= 1 else None
         if tensor is None and str(r.get("file") or "").strip():
             fname = str(r["file"]).strip()
-            tensor = _media.load_image(fname, cap_mp=float(r.get("mp") or 0.0))
-            if tensor is None:
-                raise FileNotFoundError(
-                    f"{TAG}: Reference Bible image '{fname}' was not found in input/h3_refs/. "
-                    "Re-upload it in SandTie Studio or remove it from the rail."
-                )
+            if str(r.get("source") or "").strip().lower() == "refmod":
+                try:
+                    from . import refmod as _refmod  # noqa: PLC0415
+                    vis = _refmod.load_bundle_visuals(fname, members_filter=r.get("members"))
+                    if vis and vis[0].get("looks") is not None:
+                        px = vis[0]["looks"][:1].float() / 255.0
+                        tensor = px
+                except Exception:
+                    tensor = None
+                if tensor is None:
+                    try:
+                        import folder_paths as _fp  # noqa: PLC0415
+                        import numpy as _np  # noqa: PLC0415
+                        from PIL import Image as _PILImage  # noqa: PLC0415
+                        import io as _io  # noqa: PLC0415
+                        from safetensors import safe_open as _safe_open  # noqa: PLC0415
+                        import torch as _torch  # noqa: PLC0415
+                        rel = fname.replace("/", os.sep) + ".safetensors"
+                        for rd in ([os.path.join(_fp.models_dir, "refmods")]):
+                            rp = os.path.join(rd, rel)
+                            if os.path.isfile(rp):
+                                with _safe_open(rp, framework="pt", device="cpu") as sf:
+                                    ks = set(sf.keys())
+                                    lk = next((k for k in ("looks", "looks_0", "refmod.looks") if k in ks), None)
+                                    if lk:
+                                        lt = sf.get_tensor(lk)
+                                        if lt.ndim == 3:
+                                            lt = lt.unsqueeze(0)
+                                        tensor = lt[:1].float() / 255.0
+                                    else:
+                                        ek = next((k for k in sorted(ks) if k.startswith("enc_")), None)
+                                        if ek:
+                                            raw_b = sf.get_tensor(ek).numpy().tobytes()
+                                            with _PILImage.open(_io.BytesIO(raw_b)) as pim:
+                                                tensor = _torch.from_numpy(_np.asarray(pim.convert("RGB"), dtype=_np.float32) / 255.0).unsqueeze(0)
+                                break
+                    except Exception:
+                        tensor = None
+            else:
+                tensor = _media.load_image(fname, cap_mp=float(r.get("mp") or 0.0))
+                if tensor is None:
+                    raise FileNotFoundError(
+                        f"{TAG}: Reference Bible image '{fname}' was not found in input/h3_refs/. "
+                        "Re-upload it in SandTie Studio or remove it from the rail."
+                    )
         if tensor is not None:
             ordered_imgs.append(tensor)
             if sl >= 1:
@@ -299,33 +397,64 @@ class SandTiePromptRig(io.ComfyNode):
                 "Switch wire_mode to Direct H3 Conditioning to encode Reference Bible + canvas refs into `positive` + `latent`."
             ),
             inputs=[
-                io.DynamicCombo.Input("wire_mode", options=[
-                    io.DynamicCombo.Option(WIRE_MODES[0], []),
-                    io.DynamicCombo.Option(WIRE_MODES[1], [
-                        io.Clip.Input("clip", tooltip="MiniMax H3 text encoder (Qwen3-VL)."),
-                        io.Vae.Input("vae", optional=True, tooltip="MiniMax H3 Video VAE."),
-                        io.Vae.Input("audio_vae", optional=True, tooltip="MiniMax H3 Audio VAE."),
-                        io.Combo.Input("ref_image_size", options=["match", "max"], default="match", socketless=True),
-                        io.Int.Input("width", default=0, min=0, max=4096, step=32,
-                                     tooltip="0 = auto from aspect at H3 native 768p (1344x768 or 768x1344)."),
-                        io.Int.Input("height", default=0, min=0, max=4096, step=32,
-                                     tooltip="0 = auto from aspect at H3 native 768p."),
-                    ]),
-                ]),
-                io.Combo.Input("h3_format", options=H3_FORMATS, default=H3_FORMATS[0], socketless=True),
-                io.Autogrow.Input("ref_images", optional=True, template=ref_imgs_tpl),
-                io.Autogrow.Input("ref_videos", optional=True, template=ref_vids_tpl),
-                io.Autogrow.Input("ref_audios", optional=True, template=ref_auds_tpl),
+                io.DynamicCombo.Input(
+                    "wire_mode",
+                    options=[
+                        io.DynamicCombo.Option(WIRE_MODES[0], []),
+                        io.DynamicCombo.Option(WIRE_MODES[1], [
+                            io.Clip.Input("clip", tooltip="MiniMax H3 text encoder (Qwen3-VL) for Direct Conditioning mode."),
+                            io.Vae.Input("vae", optional=True, tooltip="MiniMax H3 Video VAE (needed when encoding visual refs or keyframes)."),
+                            io.Vae.Input("audio_vae", optional=True, tooltip="MiniMax H3 Audio VAE (needed when encoding voice audio references)."),
+                            io.Combo.Input(
+                                "ref_image_size", options=["match", "max"], default="match", socketless=True,
+                                tooltip="match keeps reference aspect ratio inside H3 native caps; max scales references up to full 2048px reference resolution.",
+                            ),
+                            io.Int.Input("width", default=0, min=0, max=4096, step=32,
+                                         tooltip="Output canvas width in pixels (0 = auto-solved from aspect ratio at H3 native 768p budget)."),
+                            io.Int.Input("height", default=0, min=0, max=4096, step=32,
+                                         tooltip="Output canvas height in pixels (0 = auto-solved from aspect ratio at H3 native 768p budget)."),
+                        ]),
+                    ],
+                    tooltip="Prompt Only outputs compiled text (0 VRAM) for stock H3 nodes. Direct H3 Conditioning also encodes Reference Bible + canvas wires into positive + latent.",
+                ),
+                io.Combo.Input(
+                    "h3_format", options=H3_FORMATS, default=H3_FORMATS[0], socketless=True,
+                    tooltip="Target MiniMax H3 task structure: Ref2VA/T2VA, First Frame (I2VA), First+Last (FL2VA), Last Frame (L2VA), Start Still Prep, or Beats Only.",
+                ),
+                io.Autogrow.Input(
+                    "ref_images", optional=True, template=ref_imgs_tpl,
+                    tooltip="Optional canvas image references (auto-grows up to 9); merged cleanly with Reference Bible slots.",
+                ),
+                io.Autogrow.Input(
+                    "ref_videos", optional=True, template=ref_vids_tpl,
+                    tooltip="Optional 24 fps reference video clips (auto-grows up to 3) for style or motion guidance.",
+                ),
+                io.Autogrow.Input(
+                    "ref_audios", optional=True, template=ref_auds_tpl,
+                    tooltip="Optional voice timbre or audio references (auto-grows up to 3) in Direct Conditioning mode.",
+                ),
                 io.Image.Input("first_frame", optional=True, tooltip="Optional first-frame keyframe anchor (I2VA / FL2VA)."),
                 io.Image.Input("last_frame", optional=True, tooltip="Optional last-frame keyframe anchor (FL2VA / L2VA)."),
-                io.Combo.Input("write_mode", options=WRITE_MODES, default=WRITE_MODES[0], socketless=True),
-                io.Combo.Input("aspect", options=ASPECTS, default="16:9", socketless=True),
-                io.Combo.Input("duration", options=DURATIONS, default="10 s", socketless=True),
-                io.String.Input("brief", multiline=True, default="", socketless=True),
+                io.Combo.Input(
+                    "write_mode", options=WRITE_MODES, default=WRITE_MODES[0], socketless=True,
+                    tooltip="Writing engine: LLM + Double-Knot (2-pass planner + H3 compiler), LLM 1-Pass Quick Tie, or Instant CPU Tie (0 VRAM, rule-based).",
+                ),
+                io.Combo.Input(
+                    "aspect", options=ASPECTS, default=DEFAULT_ASPECT, socketless=True,
+                    tooltip="Full 11-ratio MiniMax H3 aspect suite (21:9 ultrawide through 1:1 square to 9:21 vertical).",
+                ),
+                io.Combo.Input(
+                    "duration", options=DURATIONS, default="10 s", socketless=True,
+                    tooltip="Clip length aligned to H3's 24 fps 17k+5 frame grid (determines beat count and output latent duration).",
+                ),
+                io.String.Input(
+                    "brief", multiline=True, default="", socketless=True,
+                    tooltip="Your scene idea, dialogue lines, or shot beats in plain English (editable inside SandTie Studio too).",
+                ),
                 io.String.Input("brief_in", optional=True, force_input=True,
                                 tooltip="Optional incoming brief string override (re-ties automatically when connected)."),
                 io.String.Input("rig_state", default="{}", socketless=True,
-                                tooltip="Internal SandTie Studio state JSON (prompt, storyboard, ref_plan, dials)."),
+                                tooltip="Serialized SandTie Studio state JSON (compiled prompt, storyboard beats, Reference Bible, and dials)."),
             ],
             outputs=[
                 io.String.Output(display_name="prompt",
@@ -352,11 +481,25 @@ class SandTiePromptRig(io.ComfyNode):
         for r in doc.get("refs") or []:
             if not isinstance(r, dict):
                 continue
-            for fn in (r.get("file"), r.get("voice")):
+            for fn, kind_f in ((r.get("file"), r.get("source") or "image"), (r.get("voice"), "image")):
                 f = str(fn or "").strip()
                 if not f:
                     continue
-                p = _media.resolve(f)
+                if kind_f == "refmod":
+                    p = None
+                    try:
+                        from . import refmod as _refmod  # noqa: PLC0415
+                        p = _refmod.resolve(f)
+                    except Exception:
+                        try:
+                            import folder_paths as _fp  # noqa: PLC0415
+                            cand = os.path.join(_fp.models_dir, "refmods", f.replace("/", os.sep) + ".safetensors")
+                            if os.path.isfile(cand):
+                                p = cand
+                        except Exception:
+                            p = None
+                else:
+                    p = _media.resolve(f)
                 if p and os.path.isfile(p):
                     st_f = os.stat(p)
                     sig.append(f"{f}:{st_f.st_mtime_ns}:{st_f.st_size}")
@@ -375,7 +518,7 @@ class SandTiePromptRig(io.ComfyNode):
         first_frame=None,
         last_frame=None,
         write_mode: str = WRITE_MODES[0],
-        aspect: str = "16:9",
+        aspect: str = DEFAULT_ASPECT,
         duration: str = "10 s",
         brief: str = "",
         brief_in: str = "",
@@ -391,7 +534,7 @@ class SandTiePromptRig(io.ComfyNode):
         flavors = dict(flavors)
         w_in = int(wm_dict.get("width") or 0)
         h_in = int(wm_dict.get("height") or 0)
-        eff_aspect = ("9:16" if h_in > w_in else ("16:9" if w_in > h_in else "1:1")) if (w_in > 0 and h_in > 0) else aspect
+        eff_aspect = _aspect_from_dims(w_in, h_in) if (w_in > 0 and h_in > 0) else _aspect_short_label(aspect)
         flavors["aspect"] = eff_aspect
         flavors["output_format"] = fmt_code
         flavors["double_knot"] = write_mode == WRITE_MODES[0]
@@ -451,6 +594,11 @@ class SandTiePromptRig(io.ComfyNode):
         clip = wm_dict.get("clip")
         if clip is None:
             raise ValueError(f"{TAG}: Direct H3 Conditioning mode requires the `clip` input.")
+        try:
+            from . import llm as _llm  # noqa: PLC0415
+            _llm.free_for_render()
+        except Exception:
+            pass
         vae = wm_dict.get("vae")
         audio_vae = wm_dict.get("audio_vae")
         ref_image_size = str(wm_dict.get("ref_image_size") or "match")

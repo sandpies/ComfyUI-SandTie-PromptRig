@@ -372,7 +372,7 @@
       "rule": "a spacious penthouse master bedroom at night mapped in 3D: a low king bed with charcoal silk sheets centered against the upholstered headboard wall with wide open hardwood floor in front, a tall brass-framed floor-length standing mirror angled on the left reflecting the bed, and floor-to-ceiling glass windows along the right wall overlooking a glowing city skyline",
       "sound": "hushed high-rise room tone, soft silk sheet rustle, distant muted city hum through thick glass",
       "life": "city skyline lights twinkle beyond the right windows; the floor-length mirror on the left catches warm bedside lamp reflections; sheer curtains drift slightly",
-      "domain": "mirror_vanity"
+      "domain": "bedroom"
     },
     {
       "id": "plate_glass_walkin_rainfall_shower",
@@ -562,7 +562,7 @@
       "rule": "a wide, rain-drenched Tokyo Shibuya asphalt intersection at night: mirror-wet black pavement with white zebra-crossing stripes in the foreground, towering LED video billboards and neon signs surrounding the plaza, and swirling street steam",
       "sound": "heavy rain hitting wet asphalt, 60Hz neon hum, distant city siren echo",
       "life": "giant LED billboards cast shifting cyan, crimson, and gold reflections across the rain puddles underfoot",
-      "domain": "mirror_vanity"
+      "domain": "combat_action"
     },
     {
       "id": "plate_glass_elevator_skyline_shaft",
@@ -572,7 +572,7 @@
       "rule": "the interior of a sleek glass-walled high-rise elevator at night: brushed steel floor and illuminated floor-button console in the near foreground, stainless-steel handrails, and three walls of clear glass showing glowing skyscraper lights streaming downward outside as the elevator ascends",
       "sound": "smooth high-speed elevator cable whirr, soft floor-chime ding, muffled city wind outside the glass",
       "life": "exterior neon building lights and steel shaft girders streak rapidly downward past the glass walls, sending moving light bands across the cab",
-      "domain": "combat_action"
+      "domain": "general"
     },
     {
       "id": "plate_luxury_massage_oil_spa_table",

@@ -266,6 +266,36 @@ def _sanitize_audio_sections(block: str, silent: bool = False) -> str:
     return out
 
 
+_EMOJI_STRIP_RX = re.compile(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]+\s*")
+_UI_WARDROBE_LABEL_RX = re.compile(
+    r"\bWearing\s+(?:NUDE(?:\s*\([^)]*\))?|FETISH(?:\s+NUDE)?|PARTIAL|TOPLESS|BOTTOMLESS)\s*[—\-–]+\s*[^:\n]+:\s*",
+    re.I,
+)
+_UI_STATE_LABEL_RX = re.compile(
+    r"`?(?:NUDE(?:\s*\([^)]*\))?|FETISH(?:\s+NUDE)?|PARTIAL|TOPLESS|BOTTOMLESS)\s*[—\-–]+\s*([^`\n]+?)`?(?=\s+state\b)",
+    re.I,
+)
+_CUT_WITHOUT_SHOT_RX = re.compile(
+    rf"(?m)^(?!(?:\[\s*Shot\s+\d+\s*\]))(At[ \t]+{_TIME_PAT}[ \t]*,[ \t]*(?:the[ \t]+)?(?:camera|shot)[ \t]+(?:cuts|switches|transitions)\b)",
+    re.I,
+)
+
+
+def _restore_missing_shot_cut_headers(desc_body: str) -> str:
+    """Restore `[Shot N]` on lines opening with `At MM:SS.mmm, camera cuts...` when `[Shot 1]` is present."""
+    if not desc_body or not re.search(r"\[\s*Shot\s+1\s*\]", desc_body, flags=re.I):
+        return desc_body
+    existing_nums = [int(m.group(1)) for m in re.finditer(r"\[\s*Shot\s+(\d+)\s*\]", desc_body, flags=re.I)]
+    next_n = [max(existing_nums, default=1) + 1]
+
+    def _add_shot_hdr(m):
+        tag = f"[Shot {next_n[0]}] "
+        next_n[0] += 1
+        return tag + m.group(1)
+
+    return _CUT_WITHOUT_SHOT_RX.sub(_add_shot_hdr, desc_body)
+
+
 def finish_block(
     raw_block: str,
     *,
@@ -285,6 +315,9 @@ def finish_block(
     t = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", t.strip())
     t = _clean_outside_d(t, lambda s: re.sub(r"\*\*(.+?)\*\*", r"\1", s))
     t = _clean_outside_d(t, lambda s: _CJK_OUTSIDE.sub("", s))
+    t = _clean_outside_d(t, lambda s: _EMOJI_STRIP_RX.sub("", s))
+    t = _clean_outside_d(t, lambda s: _UI_WARDROBE_LABEL_RX.sub("", s))
+    t = _clean_outside_d(t, lambda s: _UI_STATE_LABEL_RX.sub(r"\1", s))
     t = _clean_outside_d(t, lambda s: _META_SCAFFOLD_RX.sub("", s))
 
     fields = _std.REF2VA_FIELDS if mode == "Ref2VA" else _std.T2VA_FIELDS
@@ -303,8 +336,9 @@ def finish_block(
     desc_field = "detailed_description:" if mode == "Ref2VA" else "integrated_multimodal_description:"
     raw_desc_body = _std._field(t, desc_field)
     if raw_desc_body:
+        raw_desc_body = _restore_missing_shot_cut_headers(raw_desc_body)
         norm_desc_body = _normalize_multishot_timeline(raw_desc_body, duration_s)
-        if not bool(flavors.get("fast_engine", True)) and not re.search(r"\[\s*Shot\s+[2-9]\d*\s*\]", norm_desc_body, flags=re.I):
+        if not bool(flavors.get("time_tied", flavors.get("fast_engine", True))) and not re.search(r"\[\s*Shot\s+[2-9]\d*\s*\]", norm_desc_body, flags=re.I):
             body_lines = [ln.strip() for ln in norm_desc_body.strip().splitlines() if ln.strip()]
             shot1_lines = []
             flow_sents = []
@@ -344,12 +378,20 @@ def finish_block(
             return tag_map.get(k, m.group(1))
         t = _clean_outside_d(t, lambda s: re.sub(r"(?<![\w<])@(\w+)", _rep_at, s))
 
-    # Bind bare character names in Ref2VA
+    # Bind bare character names in Ref2VA (and fix any nested `<Subject N> (<Subject N> Name)` artifacts)
     if mode == "Ref2VA":
         for s_n, s_meta in sorted((lab.get("subjects") or {}).items()):
             cname = str(s_meta.get("char_name") or "").strip()
             if cname and len(cname) >= 3:
-                pat_cname = re.compile(rf"(?<!<Subject {s_n}> )(?<!<Subject \d> )\b({re.escape(cname)})\b")
+                t = _clean_outside_d(
+                    t,
+                    lambda s, sn=s_n, cn=cname: re.sub(
+                        rf"<Subject\s+{sn}>\s*\(\s*(?:<Subject\s+{sn}>\s+)?({re.escape(cn)})\s*\)",
+                        rf"<Subject {sn}> \1",
+                        s,
+                    ),
+                )
+                pat_cname = re.compile(rf"(?<!<Subject {s_n}> )(?<!<Subject \d> )(?<!<Subject \d> \()\b({re.escape(cname)})\b")
                 for fld in ("summary:", "detailed_description:"):
                     f_val = _std._field(t, fld)
                     if f_val and pat_cname.search(f_val):
@@ -398,6 +440,36 @@ def finish_block(
         return s
 
     t = _clean_outside_d(t, _upgrade_shaft_stroke)
+
+    # Scrub leaked directive jargon & sexual euphemisms when explicit/NSFW is active
+    exp_fin_str = str(flavors.get("explicit") or "")
+    ward_fin_str = str(flavors.get("wardrobe") or "")
+    fet_fin_str = str(flavors.get("fetish") or "")
+    is_sex_fin = _dir.is_sexual(brief, exp_fin_str, ward_fin_str, fetish_id=fet_fin_str)
+    if is_sex_fin:
+        is_les_or_peg = bool(
+            _dir.is_pegging_scene(brief, explicit_id=exp_fin_str, plan=plan_hint)
+            or re.search(r"\b(?:lesbian|fff|cunnilingus|strap[- ]?on)\b", f"{exp_fin_str} {brief}", re.I)
+        )
+
+        def _de_euphemize_sex(s: str) -> str:
+            if not is_les_or_peg:
+                s = re.sub(
+                    r"\b(?:her|their|the)\s+partner'?s\s+(?:(thick|hard|vertical|oiled|wet|glistening|throbbing|swollen)\s+)?(?:erect\s+)?(?:shaft|member|manhood)\b",
+                    lambda m: f"his {m.group(1) + ' ' if m.group(1) else ''}erect cock",
+                    s,
+                    flags=re.I,
+                )
+                s = re.sub(r"\bher\s+partner'?s\b", "the man's", s, flags=re.I)
+                s = re.sub(r"\bher\s+partner\b", "the man", s, flags=re.I)
+            s = re.sub(r",?\s*\b(?:creating|maintaining)\s+(?:a\s+)?(?:smooth\s+)?(?:continuous\s+)?rhythmic\s+motion\s+along\s+the\s+(?:active|locked)\s+pose\s+axis\b", " in steady rhythmic thrusts", s, flags=re.I)
+            s = re.sub(r"\balong\s+the\s+(?:active|locked)\s+pose\s+axis\b", "with steady depth", s, flags=re.I)
+            s = re.sub(r"\bperforms?\s+an\s+intimate\s+adult\s+encounter\b", "has explicit sex", s, flags=re.I)
+            s = re.sub(r"\ban\s+intimate\s+adult\s+encounter\b", "explicit sex", s, flags=re.I)
+            s = re.sub(r"\bvivid\s+erotic\s+intensity\b", "flushed breathless pleasure", s, flags=re.I)
+            return s
+
+        t = _clean_outside_d(t, _de_euphemize_sex)
 
     # Strip third-person narrator self-references when POV active
     pov_mode_fin = _dir.resolve_pov_mode(brief, flavors=flavors)
@@ -773,12 +845,13 @@ def adapt_preset_script(
 PASS2_REFINE_SYSTEM_PROMPT = """You are the Pass-2 Double-Knot Continuity Refiner for MiniMax H3 (SandTie Engine).
 You receive a Pass-1 draft (`plan` storyboard or complete `block` prompt) and a mandatory Audit Checklist for this clip.
 Your task:
-1. Satisfy EVERY item in the Audit Checklist while keeping Pass 1's valid labels, timestamps, and field structure intact.
-2. Lock any character sheet's racial/ethnic identity and bone structure across `subject_definitions:`, `summary:`, `retention_analysis:`, and `[Shot 1]`.
-3. Enforce strict wardrobe and set consistency across EVERY beat (keep the active outfit and physical set unified without sudden prop spawns or garment vanishes).
-4. Correct any biomechanical or POV flaw into smooth physical action along the active pose axis.
-5. Keep ZERO negative words (`no`, `not`, `never`, `without`, `avoid`, `don't`, `doesn't`, `isn't`, `aren't`, `can't`, `won't`) outside `<d>...</d>`, ZERO semicolons `;` inside `overall_soundscape:` or `non_diegetic_music:`, and ZERO meta-scaffolding labels (`embodying the ... staging`).
-6. Reply with ONLY the JSON object `{ "block": "<the refined prompt block>" }` (or `{ "plan": "<the refined storyboard>" }` when Stage is `plan`)."""
+1. Satisfy EVERY item in the Audit Checklist while keeping Pass 1's valid labels, timestamps, `[Shot N]` cut headers, and field structure intact.
+2. Lock any character sheet's racial/ethnic identity and bone structure across `subject_definitions:`, `summary:`, `retention_analysis:`, and `[Shot 1]`, writing `<Subject 1> Name` without parentheses or UI emojis.
+3. Enforce strict wardrobe, set, and transition continuity across EVERY beat (keep the active outfit and set unified, keep removed/bunched garments displaced, and bridge movements smoothly across timestamps).
+4. Write plain, concrete visual wording without literary filler or abstract jargon; in explicit/NSFW scenes name anatomy directly (`cock`, `erect penis`, `pussy`, `bare breasts`, `asshole`, `cum`) and replace euphemisms (`partner's shaft`, `her partner`) with literal phrasing (`his erect cock`, `the man`).
+5. Correct any biomechanical or POV flaw into concrete physical positioning and hand placement.
+6. Keep ZERO negative words (`no`, `not`, `never`, `without`, `avoid`, `don't`, `doesn't`, `isn't`, `aren't`, `can't`, `won't`) outside `<d>...</d>`, ZERO semicolons `;` inside `overall_soundscape:` or `non_diegetic_music:`, and ZERO meta-scaffolding labels (`embodying the ... staging`).
+7. Reply with ONLY the JSON object `{ "block": "<the refined prompt block>" }` (or `{ "plan": "<the refined storyboard>" }` when Stage is `plan`)."""
 
 
 def build_pass2_audit_checklist(
@@ -795,6 +868,7 @@ def build_pass2_audit_checklist(
     no_dialogue: bool,
     flavor_lines: list[str],
     plan: str = "",
+    prev_hop_context: str = "",
 ) -> list[str]:
     checks = []
     exp_p2_str = str(flavors.get("explicit") or "")
@@ -818,11 +892,13 @@ def build_pass2_audit_checklist(
 
     ward_opts = _cat.resolve_dial_opts("wardrobe", ward_p2_str)
     if ward_opts:
-        checks.append(f"WARDROBE LOCK: Keep the selected attire ({ward_opts[0]['label']}) consistent across EVERY beat — never replace or vanish garments mid-scene unless explicitly displaced aside.")
+        w_clean = re.sub(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]+", "", ward_opts[0]["label"]).strip()
+        checks.append(f"WARDROBE LOCK: Keep the selected attire ({w_clean}) consistent across EVERY beat — never replace or vanish garments mid-scene unless explicitly displaced aside.")
 
     place_opts = _cat.resolve_dial_opts("place", flavors.get("place"))
     if place_opts:
-        checks.append(f"ENVIRONMENT DOMAIN LOCK: Keep all props and surfaces strictly faithful to {place_opts[0]['label']} — eliminate contradictory furniture/props.")
+        p_clean = re.sub(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]+", "", place_opts[0]["label"]).strip()
+        checks.append(f"ENVIRONMENT DOMAIN LOCK: Keep all props and surfaces strictly faithful to {p_clean} — eliminate contradictory furniture/props.")
 
     if is_pov:
         pov_lbl = "male POV" if pov_val == "male" else ("female POV" if pov_val == "female" else "first-person POV")
@@ -834,10 +910,23 @@ def build_pass2_audit_checklist(
     if mouth_occupied:
         checks.append("ORAL SEAL LOCK: Keep lips sealed around the shaft/object with hollowed cheeks whenever occupied.")
     if no_dialogue:
-        checks.append("SILENT LIPS LOCK: Zero `<d>` lines; use `with lips gently closed` and narrowband acoustic foley in `overall_soundscape:`.")
+        is_sex_p2 = _dir.is_sexual(brief, exp_p2_str, ward_p2_str, fetish_id=str(flavors.get("fetish") or ""))
+        if is_sex_p2:
+            checks.append("WORDLESS AUDIO LOCK: Zero `<d>` spoken lines; put natural breaths, moans, and wet oral/skin contact foley in `overall_soundscape:`.")
+        else:
+            checks.append("SILENT LIPS LOCK: Zero `<d>` lines; use `with lips gently closed` and narrowband acoustic foley in `overall_soundscape:`.")
     else:
         checks.append("AUDIO DISCIPLINE: Keep `overall_soundscape:` strictly free of speech/voices and semicolons `;`.")
+        acc_opts_p2 = _cat.resolve_dial_opts("accent", flavors.get("accent"))
+        tgt_lang_p2 = _dlg.detect_target_language(brief, acc_opts_p2[0] if acc_opts_p2 else None)
+        if tgt_lang_p2 != "English":
+            checks.append(
+                f"NATIVE SCRIPT LOCK (<d>...</d>): Translate/rewrite EVERY spoken word inside `<d>[{tgt_lang_p2}, ...] ...</d>` strictly into authentic native {tgt_lang_p2} characters "
+                f"(sample: `{_dlg.native_sample_for(tgt_lang_p2)}`) — zero English or romanization inside `<d>...</d>`, while keeping all descriptions outside `<d>...</d>` in English."
+            )
     for fl in flavor_lines:
-        if any(tag in fl for tag in ("LAW:", "COMBAT", "ANIME-TO-REAL-LIFE", "ORBIT", "ELEVATOR", "TOP-DOWN", "OPEN-END")):
+        if any(tag in fl for tag in ("LAW:", "COMBAT", "ANIME-TO-REAL-LIFE", "ORBIT", "ELEVATOR", "TOP-DOWN", "OPEN-END", "HOP-JOIN CONTINUITY", "HOP TRANSITION")):
             checks.append(fl)
+    if str(prev_hop_context or "").strip() and not any("HOP" in c for c in checks):
+        checks.append(f"HOP CONTINUITY CHECK: Ensure [Shot 1] smoothly continues the previous hop ending (`{str(prev_hop_context).strip()[:160]}`) without resetting posture or camera.")
     return checks[:12]

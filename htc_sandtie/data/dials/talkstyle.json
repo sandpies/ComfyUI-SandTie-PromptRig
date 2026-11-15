@@ -5,6 +5,54 @@
   "note": "Original SandTie vocal delivery & acting registers.",
   "options": [
     {
+      "id": "warm_witty_banter",
+      "label": "💬 Warm Witty Banter (Natural & Grounded Chemistry)",
+      "group": "Everyday",
+      "words": "natural, quick-witted everyday conversational cadence with easy smiles, relaxed timing, and lively eye-line reactions",
+      "small": "wait, seriously?, you knew that already, fair enough, let's get moving",
+      "domain": "general"
+    },
+    {
+      "id": "earnest_dramatic_confession",
+      "label": "🎬 Earnest Dramatic Confession (Grounded Cinema)",
+      "group": "Everyday",
+      "words": "steady, emotionally honest dramatic delivery with quiet weight, brief measured pauses, and unforced sincerity",
+      "small": "look at me for a second, I didn't come here to argue, tell me the truth",
+      "domain": "general"
+    },
+    {
+      "id": "calm_noir_detective",
+      "label": "🕵️ Calm Noir Detective (Measured & Observant)",
+      "group": "Work & broadcast",
+      "words": "low, measured, observant investigative cadence with dry precision and calm control under tension",
+      "small": "interesting timing, check the hallway, keep talking, I'm listening",
+      "domain": "general"
+    },
+    {
+      "id": "bright_vlog_host",
+      "label": "🎥 Bright Camera-Facing Vlog Host (Crisp & Engaging)",
+      "group": "Work & broadcast",
+      "words": "bright, articulate camera-facing presenter rhythm with clear diction, friendly gestures, and crisp beat transitions",
+      "small": "alright, check this out, right behind me, you have to see this",
+      "domain": "general"
+    },
+    {
+      "id": "urgent_action_callout",
+      "label": "🚨 Urgent Action Callout (Fast Under-Fire Focus)",
+      "group": "Work & broadcast",
+      "words": "fast, focused, high-stakes tactical callout spoken crisply mid-movement while keeping steady breath and sharp clarity",
+      "small": "move left, watch the door, on my mark, cover the stairs",
+      "domain": "combat_action"
+    },
+    {
+      "id": "playful_comedy_deadpan",
+      "label": "😏 Playful Deadpan Comedy (Dry Timing & Beat)",
+      "group": "Everyday",
+      "words": "crisp comedic timing with dry understated inflection, raised-brow pauses, and sharp deadpan punchlines",
+      "small": "well that went great, nobody saw that, totally planned, sure",
+      "domain": "general"
+    },
+    {
       "id": "seductive_purr",
       "label": "Sultry bedroom purr",
       "group": "Performance",

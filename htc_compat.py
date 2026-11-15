@@ -227,9 +227,17 @@ def parse_ref_plan(text):
         ret = str(raw.get("retention") or "").strip()
         if ret not in _RETENTION:
             ret = "fully_preserved" if subj else "reference"
+        raw_file = str(raw.get("file") or "").strip()
+        src_kind = str(raw.get("source") or "image").strip().lower()
+        if src_kind == "refmod":
+            f_clean = raw_file.replace("\\", "/").strip("/")
+            if f_clean.lower().endswith(".safetensors"):
+                f_clean = f_clean[:-len(".safetensors")]
+        else:
+            f_clean = _os.path.basename(raw_file)
         refs.append({
             "tag": tag,
-            "file": _os.path.basename(str(raw.get("file") or "").strip()),
+            "file": f_clean,
             "slot": i + 1,
             "subject": subj,
             "retention": ret,
@@ -240,8 +248,10 @@ def parse_ref_plan(text):
             "voice_end": float(raw.get("voice_end") or 0.0),
             "mp": float(raw.get("mp") or 0.0),
             "qwen_mp": float(raw.get("qwen_mp") or 0.0),
-            "source": str(raw.get("source") or "image"),
+            "source": src_kind if src_kind == "refmod" else "image",
             "strength": float(raw.get("strength") if raw.get("strength") not in (None, "") else 1.0),
+            **({"step_curve": str(raw["step_curve"])} if raw.get("step_curve") else {}),
+            **({"members": list(raw["members"])} if isinstance(raw.get("members"), list) else {}),
         })
     subjects = {}
     if isinstance(raw_subjects, dict):

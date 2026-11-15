@@ -411,6 +411,91 @@ def build_opencv_video_strips(video_path: str, in_sec: float = 0.0, out_sec: flo
     return strips, dur, cut_times, "\n".join(telemetry_lines), ",\n".join(skeleton_items), strip_headers
 
 
+VIDEO_EXTRACT_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["name", "outfit", "room", "summary", "shot1", "beats", "music"],
+    "properties": {
+        "name": {"type": "string"},
+        "outfit": {"type": "string"},
+        "room": {"type": "string"},
+        "summary": {"type": "string"},
+        "shot1": {"type": "string"},
+        "beats": {"type": "array", "items": {"type": "string"}},
+        "music": {"type": "string"},
+    },
+}
+
+
+def _repair_json_text(cand: str) -> str:
+    s = str(cand or "").strip()
+    # Replace curly double quotes inside strings with apostrophes so they don't break JSON delimiters
+    s = s.replace("\u201c", "'").replace("\u201d", "'")
+    # Insert missing commas between JSON fields/items across newlines (e.g. "room": "..."\n  "summary": "...")
+    s = re.sub(r'([\]}"0-9]|true|false|null)[ \t]*\r?\n([ \t]*")', r"\1,\n\2", s)
+    # Remove trailing commas before closing } or ]
+    s = re.sub(r",(\s*[}\]])", r"\1", s)
+    # Escape raw control newlines inside string literals
+    out_chars: list[str] = []
+    in_str = False
+    esc = False
+    for ch in s:
+        if esc:
+            out_chars.append(ch)
+            esc = False
+            continue
+        if ch == "\\":
+            out_chars.append(ch)
+            esc = True
+            continue
+        if ch == '"':
+            out_chars.append(ch)
+            in_str = not in_str
+            continue
+        if in_str and ch == "\n":
+            out_chars.append("\\n")
+            continue
+        if in_str and ch == "\r":
+            continue
+        out_chars.append(ch)
+    return "".join(out_chars)
+
+
+def _parse_lenient_json_obj(raw: str) -> dict | None:
+    txt = str(raw or "").strip()
+    if not txt:
+        return None
+    # Strip <think>...</think> blocks if any
+    txt = re.sub(r"<think>[\s\S]*?</think>", "", txt, flags=re.I).strip()
+
+    candidates = [txt]
+    for blk in re.findall(r"```(?:json)?\s*([\s\S]*?)```", txt, flags=re.I):
+        if blk.strip():
+            candidates.append(blk.strip())
+    a, b = txt.find("{"), txt.rfind("}")
+    if 0 <= a < b:
+        candidates.append(txt[a:b + 1])
+
+    dec = json.JSONDecoder()
+    for c in candidates:
+        for attempt in (c, _repair_json_text(c)):
+            try:
+                obj = json.loads(attempt)
+                if isinstance(obj, dict):
+                    return obj
+            except Exception:
+                pass
+            idx = attempt.find("{")
+            if idx >= 0:
+                try:
+                    obj, _ = dec.raw_decode(attempt[idx:])
+                    if isinstance(obj, dict):
+                        return obj
+                except Exception:
+                    pass
+    return None
+
+
 async def extract_video_to_plan(video_path: str, complete_fn, in_sec: float = 0.0, out_sec: float = 0.0, max_seconds: float = 15.0) -> dict:
     if not video_path or not os.path.isfile(video_path):
         raise ValueError(f"Video file not found: {video_path}")
@@ -447,11 +532,29 @@ async def extract_video_to_plan(video_path: str, complete_fn, in_sec: float = 0.
         content.append({"type": "image_url", "image_url": {"url": encode_pil_mp(st_im, mp=1.0)}})
     content.append({"type": "text", "text": prompt_txt})
 
-    raw = await complete_fn([{"role": "user", "content": content}], schema=None, temperature=0.25, max_tokens=2200)
+    user_msg = {"role": "user", "content": content}
+    raw = await complete_fn([user_msg], schema=VIDEO_EXTRACT_SCHEMA, temperature=0.25, max_tokens=2200)
     from ..htc_compat import planner as _pl
     obj = _pl._parse_obj(raw)
     if not isinstance(obj, dict):
-        raise ValueError("Vision model did not return a JSON object for the video extraction.")
+        obj = _parse_lenient_json_obj(raw)
+    if not isinstance(obj, dict):
+        # Single fast JSON-repair turn reusing the cached multimodal KV prefix
+        repair_msgs = [
+            user_msg,
+            {"role": "assistant", "content": str(raw or "")},
+            {"role": "user", "content": "Your previous reply had invalid JSON syntax (such as a missing comma or unescaped quote). Return ONLY the fixed valid JSON object matching the exact schema, with no extra prose."},
+        ]
+        try:
+            raw2 = await complete_fn(repair_msgs, schema=VIDEO_EXTRACT_SCHEMA, temperature=0.1, max_tokens=2200)
+            obj = _pl._parse_obj(raw2) or _parse_lenient_json_obj(raw2)
+            if isinstance(obj, dict):
+                raw = raw2
+        except Exception:
+            pass
+    if not isinstance(obj, dict):
+        snippet = re.sub(r"\s+", " ", str(raw or "")).strip()[:180]
+        raise ValueError(f"Vision model did not return a JSON object for the video extraction. ({snippet or 'empty reply'})")
     res = {
         "ok": True,
         "name": str(obj.get("name") or os.path.splitext(os.path.basename(video_path))[0]),

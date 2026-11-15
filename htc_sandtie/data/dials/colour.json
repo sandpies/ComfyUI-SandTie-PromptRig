@@ -258,6 +258,34 @@
       "group": "Cool & Night",
       "rule": "silvery cobalt blue-hour wash transforming scene shadows into cool nocturnal moonlight",
       "domain": "general"
+    },
+    {
+      "id": "grade_split_tone_amber_cyan",
+      "label": "🎨 Split-Tone Cinema (Warm Gold Highlights / Cool Cyan Shadows)",
+      "group": "Stylized, Neon & Monochrome",
+      "rule": "balanced two-hue split-tone curve washing crisp highlights in warm honey-gold while cooling shadows into deep cinema teal-cyan",
+      "domain": "general"
+    },
+    {
+      "id": "grade_filmic_faded_print",
+      "label": "🎞️ Filmic Faded Print (Lifted Velvety Blacks & Creamy Rolloff)",
+      "group": "Film & Natural",
+      "rule": "soft photochemical print grade with gently lifted charcoal blacks, creamy highlight rolloff, and organic midtone warmth",
+      "domain": "general"
+    },
+    {
+      "id": "grade_monochrome_silver",
+      "label": "🖤 Silver Gelatin Monochrome (Rich Tonal Range & Crisp Whites)",
+      "group": "Stylized, Neon & Monochrome",
+      "rule": "pure silver-gelatin monochrome cinema palette balancing deep ink shadows, luminous silver midtones, and crisp specular skin highlights",
+      "domain": "general"
+    },
+    {
+      "id": "grade_hyper_saturated_pop",
+      "label": "🌈 Hyper-Saturated Pop (Vivid Candy Primaries & Glossy Contrast)",
+      "group": "Stylized, Neon & Monochrome",
+      "rule": "bold high-saturation color palette popping luminous reds, electric blues, and warm skin tones against deep glossy darks",
+      "domain": "general"
     }
   ]
 }

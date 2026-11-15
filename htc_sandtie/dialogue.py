@@ -84,43 +84,195 @@ def should_suppress_dialogue(
 
 _ARC_FALLBACKS = {
     0: [
-        "Hold completely still right there—let's see how long that calm look lasts~",
-        "Keep your eyes locked straight on mine, don't blink first~",
-        "Come closer—we don't have anyone watching for the next two minutes.",
-        "Careful, one wrong move and you're letting me take charge tonight~",
+        "Come closer—right here on the edge.",
+        "Keep your eyes right on mine.",
+        "Don't hold back—take your time right here.",
+        "Right there—stay close while I pull this off.",
     ],
     1: [
-        "Right like that—feel your pulse jumping straight under my palms~",
-        "Listen to yourself trying to stay composed while your breath shakes...",
-        "Look how quickly all that tough talk turned into a whisper~",
-        "Wait—hold that exact rhythm, don't speed up until I say so~",
+        "Mmm, right like that—keep going just like that.",
+        "Faster—don't stop now, keep that exact pace.",
+        "Ah—right there, stay deep just like that.",
+        "Feel how wet and tight this is—keep thrusting.",
     ],
     2: [
-        "There it is—stay right there and let every last wall drop~",
-        "Look at you completely undone... I knew you wouldn't last a minute~",
-        "Still catching your breath? Good—stay tangled right here with me.",
-        "Not a single ounce of calm left, and we only just got started~",
+        "Yes—right there, keep going until we finish together.",
+        "Mmmph—don't pull back now, stay all the way inside.",
+        "Right there—so deep, don't stop.",
+        "Catch your breath right here—stay pressed tight against me.",
     ],
 }
 
 
 _SFW_ARC_FALLBACKS = {
     0: [
-        "Take a breath—everything is lined up cleanly right here.",
-        "Look this way for a second before we start moving.",
-        "Wait right there—let the light catch the frame first.",
+        "Hold on—did you see that by the window?",
+        "Wait a second, let me finish setting this down first.",
+        "You made it right on time—come take a look at this.",
     ],
     1: [
-        "Stay right with me on this beat, keep it steady.",
-        "Keep moving forward—right through the middle of the room.",
-        "Hold that expression right there for one more moment.",
+        "Keep moving forward—we only get one clean shot at this.",
+        "Look closely at what changed since earlier.",
+        "Wait—did you hear that right down the hall?",
     ],
     2: [
-        "That landed right on cue—hold the frame steady.",
-        "Good, settle right there and let the scene breathe.",
-        "That is exactly what we needed—stay right there.",
+        "Alright, that settles it. Let's head out.",
+        "Good—now we know exactly where things stand.",
+        "There it is. Right where we left it.",
     ],
 }
+
+
+_NATIVE_SFW_FALLBACKS = {
+    "Japanese": [
+        "ちょっと待って、今の見た？",
+        "そのまま動かないで、こっちを見て。",
+        "ほら、やっと見つかったよ。",
+    ],
+    "Korean": [
+        "잠깐만, 방금 창밖 봤어?",
+        "이리 와 봐, 지금부터가 진짜야.",
+        "좋아, 이제 다음으로 넘어가자.",
+    ],
+    "Mandarin": [
+        "等一下，你刚才看到窗外了吗？",
+        "先别动，仔细看看这里。",
+        "好了，现在全都清楚了。",
+    ],
+    "Spanish": [
+        "Espera un segundo, ¿viste eso por la ventana?",
+        "Ven aquí, quédate justo en este lugar.",
+        "Perfecto, ahora seguimos adelante juntos.",
+    ],
+    "French": [
+        "Attends une seconde, tu as vu ça par la fenêtre ?",
+        "Viens plus près, regarde bien ce qui change.",
+        "Très bien, maintenant on peut y aller.",
+    ],
+    "Russian": [
+        "Подожди секунду, ты видел это у окна?",
+        "Подойди ближе и смотри прямо сюда.",
+        "Хорошо, теперь всё встало на свои места.",
+    ],
+    "Portuguese": [
+        "Espera um segundo, você viu aquilo na janela?",
+        "Chega mais perto e olha bem para isso.",
+        "Perfeito, agora está tudo no lugar.",
+    ],
+    "Italian": [
+        "Aspetta un attimo, hai visto fuori dalla finestra?",
+        "Vieni più vicino e guarda qui con calma.",
+        "Perfetto, adesso è tutto molto chiaro.",
+    ],
+}
+
+_NATIVE_NSFW_FALLBACKS = {
+    "Japanese": [
+        "もっと近くに来て、目をそらさないで。",
+        "あっ、そこ…そのまま止めないで動かして。",
+        "だめ、奥まで入って…このまま離さないで。",
+    ],
+    "Korean": [
+        "더 가까이 와 봐, 내 눈만 바라봐.",
+        "아, 거기… 멈추지 말고 계속 움직여 줘.",
+        "좋아, 끝까지 들어온 채로 안아 줘.",
+    ],
+    "Mandarin": [
+        "再靠近一点，看着我的眼睛别移开。",
+        "嗯，就这样别停，保持这个节奏继续。",
+        "好深，就这样紧紧贴在一起别松开。",
+    ],
+    "Spanish": [
+        "Acércate más, mírame directo a los ojos.",
+        "Así, sigue moviéndote despacio sin parar.",
+        "Quédate bien adentro, pegado contra mí.",
+    ],
+    "French": [
+        "Approche-toi encore, garde les yeux sur moi.",
+        "Oui, comme ça, continue exactement ce rythme.",
+        "Reste tout au fond, serré contre moi.",
+    ],
+    "Russian": [
+        "Подойди ближе и смотри прямо мне в глаза.",
+        "Вот так, не останавливайся, двигайся глубже.",
+        "Останься внутри до самого конца, прижмись ко мне.",
+    ],
+    "Portuguese": [
+        "Chega mais perto, olha direto nos meus olhos.",
+        "Isso, continua nesse ritmo sem parar agora.",
+        "Fica bem fundo assim, colado em mim.",
+    ],
+    "Italian": [
+        "Avvicinati ancora, tienimi gli occhi addosso.",
+        "Sì, proprio così, continua con questo ritmo.",
+        "Resta tutto dentro, stretto contro di me.",
+    ],
+}
+
+_NATIVE_LANG_SCRIPT_RX = {
+    "Japanese": re.compile(r"[\u3040-\u30ff]"),
+    "Korean": re.compile(r"[\uac00-\ud7af]"),
+    "Mandarin": re.compile(r"[\u4e00-\u9fff]"),
+    "Chinese": re.compile(r"[\u4e00-\u9fff]"),
+    "Russian": re.compile(r"[\u0400-\u04ff]"),
+    "Spanish": re.compile(r"[áéíóúüñ¿¡]|\b(?:qué|como|cómo|más|aquí|ahora|esto|está|estás|contigo|conmigo|quiero|ven|mira|todo|bien|así|sin|para)\b", re.I),
+    "French": re.compile(r"[àâçéèêëîïôûùüÿœ]|\b(?:je|tu|nous|vous|avec|sans|comme|encore|viens|ici|plus|près|oui|bien|tout|c'est|maintenant|regarde)\b", re.I),
+    "Portuguese": re.compile(r"[ãõáéíóúâêôç]|\b(?:você|aqui|agora|mais|perto|vem|olha|comigo|assim|tudo|meu|minha|isso|sem|para)\b", re.I),
+    "Italian": re.compile(r"[àèéìíîòóùú]|\b(?:ciao|vieni|qui|guarda|ancora|questo|questa|adesso|sempre|così|tutto|mio|mia|con|senza)\b", re.I),
+}
+
+
+def detect_target_language(brief: str = "", acc_opt: dict | None = None) -> str:
+    """Resolve the requested spoken language (e.g. 'Japanese', 'Korean', 'English')."""
+    if acc_opt:
+        lang = str(acc_opt.get("lang") or "").strip()
+        if lang and lang.lower() != "english":
+            return lang
+        acc_id = str(acc_opt.get("id") or "").lower()
+        if acc_id == "japanese_native_anime":
+            return "Japanese"
+        if acc_id == "korean_native_seoul":
+            return "Korean"
+        if acc_id == "mandarin_native_beijing":
+            return "Mandarin"
+    b = str(brief or "")
+    if b:
+        for pat, name in (
+            (r"\b(?:in\s+japanese|speaks?\s+japanese|japanese\s+(?:dialogue|voice|lines?|speech))\b|[\u3040-\u30ff]", "Japanese"),
+            (r"\b(?:in\s+korean|speaks?\s+korean|korean\s+(?:dialogue|voice|lines?|speech))\b|[\uac00-\ud7af]", "Korean"),
+            (r"\b(?:in\s+(?:mandarin|chinese)|speaks?\s+(?:mandarin|chinese)|(?:mandarin|chinese)\s+(?:dialogue|voice|lines?|speech))\b", "Mandarin"),
+            (r"\b(?:in\s+spanish|speaks?\s+spanish|spanish\s+(?:dialogue|voice|lines?|speech))\b", "Spanish"),
+            (r"\b(?:in\s+french|speaks?\s+french|french\s+(?:dialogue|voice|lines?|speech))\b", "French"),
+            (r"\b(?:in\s+russian|speaks?\s+russian|russian\s+(?:dialogue|voice|lines?|speech))\b|[\u0400-\u04ff]", "Russian"),
+            (r"\b(?:in\s+portuguese|speaks?\s+portuguese|portuguese\s+(?:dialogue|voice|lines?|speech))\b", "Portuguese"),
+            (r"\b(?:in\s+italian|speaks?\s+italian|italian\s+(?:dialogue|voice|lines?|speech))\b", "Italian"),
+        ):
+            if re.search(pat, b, re.I):
+                return name
+    return "English"
+
+
+def language_script_missing(text: str, target_lang: str) -> bool:
+    """Return True if <d>...</d> lines (or lyrics) lack native script for `target_lang`."""
+    lang = str(target_lang or "").strip()
+    if not lang or lang.lower() in ("auto", "english"):
+        return False
+    rx = _NATIVE_LANG_SCRIPT_RX.get(lang)
+    if rx is None:
+        return False
+    d_matches = re.findall(r"<d>(.*?)</d>", str(text or ""), flags=re.S | re.I)
+    if not d_matches:
+        return False
+    # Strip delivery tag [Japanese, ...] before checking spoken content
+    spoken = " ".join(re.sub(r"^\s*\[[^\]]*\]\s*", "", d) for d in d_matches).strip()
+    if not spoken:
+        return False
+    return not bool(rx.search(spoken))
+
+
+def native_sample_for(target_lang: str) -> str:
+    pool = _NATIVE_SFW_FALLBACKS.get(target_lang)
+    return pool[0] if pool else ""
 
 
 def pick_beat_dialogue_cues(
@@ -133,6 +285,7 @@ def pick_beat_dialogue_cues(
     is_sexual_scene: bool = False,
 ) -> list[str]:
     """Deterministic, varied Beat 1/2/3 dialogue suggestions so no stale template line ever repeats."""
+    target_lang = detect_target_language(brief, acc_opt)
     seed_src = f"{brief}|{(talk_opt or {}).get('id', '')}|{(acc_opt or {}).get('id', '')}|{'/'.join(p.get('title','') for p in (playbook_entries or []))}"
     h_idx = int(hashlib.sha1(seed_src.encode("utf-8", "ignore")).hexdigest()[:8], 16)
 
@@ -148,6 +301,11 @@ def pick_beat_dialogue_cues(
     out: list[str] = []
     for b in range(max(1, n_beats)):
         arc_b = 0 if b == 0 else (2 if b == n_beats - 1 else 1)
+        if target_lang != "English":
+            native_pool = (_NATIVE_NSFW_FALLBACKS if is_sexual_scene else _NATIVE_SFW_FALLBACKS).get(target_lang)
+            if native_pool:
+                out.append(native_pool[b % len(native_pool)])
+                continue
         if b < len(pb_phrases):
             out.append(pb_phrases[b])
         elif is_sexual_scene:

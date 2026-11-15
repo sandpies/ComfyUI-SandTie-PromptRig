@@ -479,6 +479,132 @@
       "group": "Film looks",
       "rule": "meticulously centered symmetrical framing with warm whimsical pastel palette, storybook props, and crisp planar staging",
       "domain": "general"
+    },
+    {
+      "id": "viral_2000s_paparazzi_flash",
+      "label": "📸 Viral Look — 2000s Paparazzi Direct Flash & Sidewalk Glare",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "raw early-2000s compact digital paparazzi flash look: punchy direct on-camera strobe casting hard crisp wall shadows, cool greenish ambient tint, glistening skin speculars, and candid sidewalk energy",
+      "domain": "general"
+    },
+    {
+      "id": "viral_broken_mirror_shards",
+      "label": "🪞 Viral Look — Broken Mirror Shards (Fractured Multi-Angle Faces)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "fractured cracked-silver mirror composition splitting the subject's reflection across sharp angled mirror shards, each shard catching a subtly offset gaze or moment in crisp silver-edged glass",
+      "domain": "mirror_vanity"
+    },
+    {
+      "id": "viral_ink_riot_calligraphy",
+      "label": "🖌️ Viral Look — Ink Riot (Liquid Calligraphy Blooming Around Subject)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "photoreal live-action subject framed inside erupting liquid sumi ink and bright pigment brush splatters swirling weightlessly through the air around their silhouette",
+      "domain": "general"
+    },
+    {
+      "id": "viral_monet_muse_impressionist",
+      "label": "🎨 Viral Look — Monet Muse (Broken-Color Impressionist Garden Light)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "painterly impressionist cinema look blending dappled garden sunlight, broken pastel oil brushstrokes, shimmering water reflections, and soft luminous sunlit edges",
+      "domain": "general"
+    },
+    {
+      "id": "viral_pearl_earring_dutch_master",
+      "label": "🖼️ Viral Look — Dutch Master Studio (North Window Chiaroscuro & Pearl Catchlight)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "17th-century Dutch Master portrait aesthetic lit from one soft side window against a deep umber background with luminous oil-painted skin sheen and one crisp specular earring catchlight",
+      "domain": "general"
+    },
+    {
+      "id": "viral_ultraviolet_blacklight",
+      "label": "💜 Viral Look — Ultraviolet Black-Light (Fluorescent Whites & UV Neon Skin)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "true ultraviolet black-light illumination making bright whites, teeth, neon trims, and reactive paint glow vividly against deep indigo-violet shadows",
+      "domain": "general"
+    },
+    {
+      "id": "viral_action_figure_blister",
+      "label": "🧸 Viral Look — Collectible Action-Figure Toy Diorama (Glossy Molded Joints)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "miniature collectible vinyl action-figure aesthetic: crisp articulated plastic joints, satin painted outfit textures, miniature diorama base, and bright tabletop studio rim lighting",
+      "domain": "general"
+    },
+    {
+      "id": "viral_flash_comic_halftone",
+      "label": "💥 Viral Look — Flash-Strobe Comic Ink & Pop Halftone",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "punchy bold graphic comic ink outlines fused with hard white strobe impact bursts, vibrant CMYK halftone dot shading, and dynamic speed streaks",
+      "domain": "general"
+    },
+    {
+      "id": "viral_marble_living_statue",
+      "label": "🏛️ Viral Look — Veined Carrara Marble Living Sculpture",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "classical carved white Carrara marble texture with subtle blue-grey mineral veining and cool museum gallery light animating seamlessly as a breathing sculpture",
+      "domain": "general"
+    },
+    {
+      "id": "viral_origami_folded_world",
+      "label": "🦢 Viral Look — Crisp Origami Paper-Crease Sculpture World",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "geometric folded origami paper aesthetic built from crisp triangular creases, matte colored cardstock planes, and physical paper shadows moving in rhythmic unfolds",
+      "domain": "general"
+    },
+    {
+      "id": "viral_lost_in_book_portal",
+      "label": "📖 Viral Look — Open-Book Page Portal (Weather & Ink Rising Off Paper)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "tactile close foreground of an open hardcover book whose textured paper pages open like a dimensional threshold with mist, light, and miniature scene motion rising out of the gutter",
+      "domain": "general"
+    },
+    {
+      "id": "viral_orbital_vacuum_halo",
+      "label": "🛰️ Viral Look — Orbital Space Vacuum (Sharp Sun Limb & Planet Curve Below)",
+      "group": "00 · Viral & Experimental Looks",
+      "rule": "weightless orbital space vista suspending the subject above a razor-sharp sunlit planetary horizon against pitch-black starlit space with crisp unfiltered solar rim light",
+      "domain": "general"
+    },
+    {
+      "id": "genre_giallo_primary_thriller",
+      "label": "🔪 Genre Look — 70s Italian Giallo (Primary Gels, Black Leather & Zoom Dread)",
+      "group": "00 · Classic Genre Cinema",
+      "rule": "1970s Italian giallo thriller cinematography bathed in saturated cobalt, scarlet, and emerald window gels over glossy fashion interiors with slow tense optical zooms",
+      "domain": "general"
+    },
+    {
+      "id": "genre_french_new_wave_16mm",
+      "label": "🎞️ Genre Look — French New Wave (Handheld Street 16mm & Spontaneous Jump Cuts)",
+      "group": "00 · Classic Genre Cinema",
+      "rule": "lively French New Wave location cinema shot in crisp 16mm street daylight along sidewalk cafes with spontaneous handheld glances to lens and punchy rhythmic jump cuts",
+      "domain": "general"
+    },
+    {
+      "id": "genre_german_expressionism",
+      "label": "🕯️ Genre Look — German Expressionism (Slanted Corridors & Jagged Shadows)",
+      "group": "00 · Classic Genre Cinema",
+      "rule": "stylized German Expressionist cinema with steep forced-perspective staircases, tilted geometry, and razor-sharp painted diagonal shadows slicing across stone walls",
+      "domain": "general"
+    },
+    {
+      "id": "genre_spaghetti_western_235",
+      "label": "🤠 Genre Look — Spaghetti Western 2.35 (Dusty Ochre & Extreme Eye-Zoom Standoff)",
+      "group": "00 · Classic Genre Cinema",
+      "rule": "classic 2.35 widescreen spaghetti western look in sun-bleached ochre dust and harsh desert sunlight, alternating wide plaza sweeps with razor-tight telephoto eye close-ups",
+      "domain": "general"
+    },
+    {
+      "id": "genre_cosmic_horror_dread",
+      "label": "👁️ Genre Look — Cosmic Dread (Monumental Scale, Under-Light & Uncanny Geometry)",
+      "group": "00 · Classic Genre Cinema",
+      "rule": "unnerving cosmic-dread cinematography contrasting tiny human silhouettes against towering impossible architecture, eerie upward under-lighting, and deep misty horizon depth",
+      "domain": "general"
+    },
+    {
+      "id": "genre_cinema_verite_raw",
+      "label": "📹 Genre Look — Raw Cinéma Vérité (Available Room Light & Live Find-Zoom)",
+      "group": "00 · Classic Genre Cinema",
+      "rule": "authentic unvarnished cinéma vérité realism shot strictly under mixed practical room bulbs with spontaneous reactive handheld zooms catching honest unguarded gestures",
+      "domain": "general"
     }
   ]
 }

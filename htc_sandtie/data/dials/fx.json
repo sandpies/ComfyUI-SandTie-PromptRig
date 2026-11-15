@@ -654,6 +654,55 @@
       "group": "Optical",
       "rule": "crisp stroboscopic flash accents carving rhythmic pose phases cleanly across dark studio air",
       "domain": "general"
+    },
+    {
+      "id": "fx_altered_state_afterimage",
+      "label": "🌀 Altered-State Hue Afterimage & Motion Smear Trail",
+      "group": "Optical",
+      "rule": "dreamlike perceptual smear leaving soft translucent color afterimages trailing gracefully behind turning heads and moving hands",
+      "domain": "general"
+    },
+    {
+      "id": "fx_forced_perspective_scale",
+      "label": "📏 Forced-Perspective Scale Play (Foreground Giant / Background Tiny)",
+      "group": "Optical",
+      "rule": "clever in-camera forced-perspective depth staging placing a near-lens hand or prop at towering scale beside a distant full figure aligned on the same tabletop plane",
+      "domain": "general"
+    },
+    {
+      "id": "fx_object_portal_wormhole",
+      "label": "🚪 Prop / Mirror Wormhole Portal Transition",
+      "group": "Optical",
+      "rule": "seamless spatial portal effect where an ordinary mirror, cabinet door, or bag opens cleanly directly into a contrasting distant location",
+      "domain": "general"
+    },
+    {
+      "id": "fx_photogrammetry_mesh_orbit",
+      "label": "🧊 Photogrammetry Scanned-Mesh Orbit Texture",
+      "group": "Digital",
+      "rule": "tactile 3D photogrammetry scan aesthetic revealing faceted polygon surface micro-glints and crisp captured texture facets as the camera orbits smoothly",
+      "domain": "general"
+    },
+    {
+      "id": "fx_aspect_ratio_expand",
+      "label": "↔️ Dynamic Frame Aspect Expansion (Boxed Matte -> Full Widescreen)",
+      "group": "Optical",
+      "rule": "smoothly widening letterbox side mattes opening from tight claustrophobic framing into full panoramic horizontal space as the beat crescendos",
+      "domain": "general"
+    },
+    {
+      "id": "fx_selfie_twin_mirror_split",
+      "label": "🪞 Arm's-Length Selfie Twin Double-Take",
+      "group": "Digital",
+      "rule": "playful arm's-length wide-angle front-camera framing placing identical twin personas side by side reacting together in crisp candid phone clarity",
+      "domain": "general"
+    },
+    {
+      "id": "fx_sticker_peel_layer",
+      "label": "🏷️ Die-Cut Sticker Peel World Reveal",
+      "group": "Digital",
+      "rule": "glossy die-cut vinyl sticker edge curling smoothly off the frame corner with crisp adhesive sheen to reveal an active live scene underneath",
+      "domain": "general"
     }
   ]
 }

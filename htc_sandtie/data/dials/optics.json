@@ -612,6 +612,55 @@
       "group": "Lens",
       "rule": "gentle dark optical corner falloff drawing attention cleanly toward illuminated center faces",
       "domain": "general"
+    },
+    {
+      "id": "lens_135mm_eavesdrop",
+      "label": "🔭 135mm Telephoto Eavesdrop (Stacked Planes & Intimate Distance)",
+      "group": "Lens",
+      "rule": "135mm telephoto compression shot from across the room or street stacking foreground and background layers tightly behind crisp shallow subject isolation",
+      "domain": "general"
+    },
+    {
+      "id": "lens_200mm_long_sniper",
+      "label": "🎯 200mm Extreme Long Telephoto (Heat Shimmer & Flattened Depth)",
+      "group": "Lens",
+      "rule": "200mm extreme telephoto lens flattening distant urban or landscape planes into tight layered ribbons with subtle atmospheric air shimmer",
+      "domain": "general"
+    },
+    {
+      "id": "lens_vintage_cooke_k35",
+      "label": "🎞️ Vintage Cine Glass (Warm Rolloff, Subtle Halation & Gentle Edges)",
+      "group": "Lens",
+      "rule": "vintage cinema prime optics yielding creamy highlight rolloff, soft skin rendering, subtle warm amber halation around lamps, and gently rolling outer bokeh",
+      "domain": "general"
+    },
+    {
+      "id": "cadence_low_shutter_staccato",
+      "label": "⚡ Low Shutter Staccato (Crisp Frozen Droplets & Sharp Action Edges)",
+      "group": "Motion Cadence",
+      "rule": "crisp narrow-shutter staccato motion cadence freezing splashing droplets, flying dust, and fast limb snaps with razor-sharp edge clarity in every frame",
+      "domain": "combat_action"
+    },
+    {
+      "id": "cadence_wkw_step_printing",
+      "label": "💫 Wong Kar-Wai Step Printing (Romantic Motion Trails & Repeated Cadence)",
+      "group": "Motion Cadence",
+      "rule": "expressive slow-shutter step-printed cadence trailing luminous neon smears and fluid ghosted movement behind faces walking through crowded midnight air",
+      "domain": "general"
+    },
+    {
+      "id": "comp_over_shoulder_frame",
+      "label": "🗣️ Over-the-Shoulder Conversation Anchor",
+      "group": "Composition",
+      "rule": "classic over-the-shoulder two-shot anchoring the foreground listener's blurred shoulder and cheek at one frame edge while holding sharp focus on the speaker's eyes",
+      "domain": "general"
+    },
+    {
+      "id": "comp_golden_ratio_lead",
+      "label": "🌀 Golden Ratio Lead Room (1.618 Balance & Directional Gaze)",
+      "group": "Composition",
+      "rule": "balanced golden-ratio placement giving generous open breathing room across the direction the subject looks or walks",
+      "domain": "general"
     }
   ]
 }

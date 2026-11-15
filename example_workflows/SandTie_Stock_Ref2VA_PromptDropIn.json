@@ -689,7 +689,7 @@
         "Prompt Only -> Stock H3 Node",
         "MiniMax H3 Auto (Ref2VA / T2VA)",
         "Instant CPU Tie (0 VRAM)",
-        "16:9",
+        "16:9 landscape",
         "5 s",
         "Subject stands calmly beside a tall sunlit window in soft natural light, shifts weight gently, and speaks warmly to camera.",
         "{}"
@@ -698,7 +698,7 @@
         "wire_mode": "Prompt Only -> Stock H3 Node",
         "h3_format": "MiniMax H3 Auto (Ref2VA / T2VA)",
         "write_mode": "Instant CPU Tie (0 VRAM)",
-        "aspect": "16:9",
+        "aspect": "16:9 landscape",
         "duration": "5 s",
         "brief": "Subject stands calmly beside a tall sunlit window in soft natural light, shifts weight gently, and speaks warmly to camera.",
         "rig_state": "{}"

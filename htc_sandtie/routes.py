@@ -131,24 +131,108 @@ def register_sandtie_routes(instance, web) -> None:
     from . import vision_cv as _vcv
     from . import writer as _wr
 
+    def _is_dry_only_prompt(json_data) -> bool:
+        if not isinstance(json_data, dict):
+            return False
+        prompt_map = json_data.get("prompt")
+        if not isinstance(prompt_map, dict) or not prompt_map:
+            return False
+        htc_nodes = [
+            n for n in prompt_map.values()
+            if isinstance(n, dict) and n.get("class_type") == "HandTieClips"
+        ]
+        if not htc_nodes:
+            return False
+        all_dry = all(
+            isinstance(n.get("inputs"), dict) and str(n["inputs"].get("dry_run") or "off") == "on"
+            for n in htc_nodes
+        )
+        if not all_dry:
+            return False
+        gpu_types = ("MiniMaxH3", "KSampler", "SamplerCustom", "VAEDecode", "VAEEncode")
+        return not any(
+            isinstance(n, dict) and any(gt in str(n.get("class_type") or "") for gt in gpu_types)
+            for n in prompt_map.values()
+        )
+
     def _free_writer_on_prompt(json_data):
         try:
+            if not _llm.configured():
+                return json_data
+            if _is_dry_only_prompt(json_data):
+                return json_data
             conn = _llm.load_conn()
             if conn.get("unload_on_run", True):
                 spec = _llm.backend_spec(conn.get("backend"))
                 if not spec.get("evictable", True):
                     n_stopped = _llm.stop_process()
-                    n_waited = _wait_for_ninfer_exit(2500)
+                    n_waited = 0
+                    if n_stopped or not _llm._server_exe(conn.get("backend")):
+                        n_waited = _wait_for_ninfer_exit(1500)
                     if n_stopped or n_waited:
                         print(f"[{TAG}] auto-stopped {spec['label']} before render", flush=True)
                 else:
-                    _llm.free_for_render()
+                    # Never block ComfyUI's aiohttp event loop waiting on HTTP unload
+                    # + VRAM settle; dispatch asynchronously when inside an active loop.
+                    try:
+                        loop = asyncio.get_running_loop()
+                    except RuntimeError:
+                        loop = None
+                    if loop is not None:
+                        async def _bg_unload(url=conn.get("server_url") or "", mdl=conn.get("model") or ""):
+                            try:
+                                await _llm.unload_all(url, mdl)
+                            except Exception:
+                                pass
+                        loop.create_task(_bg_unload())
+                    else:
+                        _llm.free_for_render()
         except Exception as exc:
             print(f"[{TAG}] on_prompt writer stop skipped: {exc!r}", flush=True)
         return json_data
 
     if hasattr(instance, "add_on_prompt_handler"):
         instance.add_on_prompt_handler(_free_writer_on_prompt)
+
+    def _list_sandtie_videos():
+        seen = set()
+        out = []
+        for f in _media.listing({"video"}):
+            nm = str(f.get("name") or "").strip()
+            if nm and nm not in seen:
+                seen.add(nm)
+                out.append(nm)
+        try:
+            inp_dir = _media.input_dir()
+            if os.path.isdir(inp_dir):
+                for nm in sorted(os.listdir(inp_dir)):
+                    if nm in seen or _media.kind_of(nm) != "video":
+                        continue
+                    p = os.path.join(inp_dir, nm)
+                    if os.path.isfile(p):
+                        seen.add(nm)
+                        out.append(nm)
+        except Exception:
+            pass
+        return out
+
+    def _resolve_sandtie_video(raw_name: str) -> str | None:
+        clean = str(raw_name or "").strip().replace("\\", "/")
+        if not clean:
+            return None
+        if clean.lower().startswith("h3_refs/"):
+            clean = clean[len("h3_refs/"):]
+        hit = _media.resolve(clean, kinds={"video"})
+        if hit and os.path.isfile(hit):
+            return hit
+        base = os.path.basename(clean)
+        if _media.kind_of(base) != "video":
+            return None
+        inp_dir = os.path.abspath(_media.input_dir())
+        cand = os.path.abspath(os.path.join(inp_dir, base))
+        if (cand == inp_dir or cand.startswith(inp_dir + os.sep)) and os.path.isfile(cand):
+            return cand
+        return None
 
     @instance.routes.get(SANDTIE_OPTIONS_ROUTE)
     async def _sandtie_options(request):
@@ -166,6 +250,8 @@ def register_sandtie_routes(instance, web) -> None:
             }
             if not lite:
                 payload["catalog"] = _cat.ui_catalog()
+            payload["audio_files"] = [f["name"] for f in _media.listing({"audio"})]
+            payload["video_files"] = _list_sandtie_videos()
             return web.json_response(payload)
         except Exception as exc:
             return web.json_response({"ok": False, "error": str(exc)}, status=500)
@@ -203,25 +289,47 @@ def register_sandtie_routes(instance, web) -> None:
 
     @instance.routes.get(SANDTIE_THUMB_ROUTE)
     async def _sandtie_thumb(request):
-        fname = os.path.basename(str(request.query.get("file") or "").strip())
-        if not fname:
+        raw_file = str(request.query.get("file") or "").strip()
+        src_kind = str(request.query.get("source") or "").strip().lower()
+        if not raw_file:
             return web.Response(status=400, text="missing file")
-        fpath = _media.resolve(fname, kinds={"image"})
-        if not fpath or not os.path.isfile(fpath):
-            return web.Response(status=404, text="not found")
         try:
             width = int(request.query.get("w") or 128)
         except Exception:
             width = 128
+        if src_kind == "refmod" or _media.resolve(os.path.basename(raw_file), kinds={"image"}) is None:
+            rm_mod = _refs._refmod_module()
+            if rm_mod is not None and rm_mod.resolve(raw_file) is not None:
+                jpg = await asyncio.get_running_loop().run_in_executor(
+                    None, lambda: rm_mod.thumb_bytes(raw_file, member_idx=0, width=width)
+                )
+                if jpg:
+                    headers = {"Cache-Control": "public, max-age=31536000, immutable" if request.query.get("v") else "public, max-age=300"}
+                    return web.Response(body=jpg, content_type="image/jpeg", headers=headers)
+                if src_kind == "refmod":
+                    return web.Response(status=404, text="no preview")
+        fname = os.path.basename(raw_file)
+        fpath = _media.resolve(fname, kinds={"image"})
+        if not fpath or not os.path.isfile(fpath):
+            return web.Response(status=404, text="not found")
         thumb_path = await asyncio.get_running_loop().run_in_executor(None, _build_ref_thumb, fpath, width)
         target = thumb_path if (thumb_path and os.path.isfile(thumb_path)) else fpath
         headers = {"Cache-Control": "public, max-age=31536000, immutable" if request.query.get("v") else "public, max-age=300"}
         return web.FileResponse(target, headers=headers)
 
+    def _refbank_payload(**extra):
+        return {
+            "ok": True,
+            "items": _refs.load_ref_bank(),
+            "audio_files": [f["name"] for f in _media.listing({"audio"})],
+            "has_refmods": bool(_refs._refmod_module() is not None),
+            **extra,
+        }
+
     @instance.routes.get(SANDTIE_REFBANK_ROUTE)
     async def _sandtie_refbank_get(_request):
         try:
-            return web.json_response({"ok": True, "items": _refs.load_ref_bank()})
+            return web.json_response(_refbank_payload())
         except Exception as exc:
             return web.json_response({"ok": False, "error": str(exc)}, status=500)
 
@@ -235,23 +343,43 @@ def register_sandtie_routes(instance, web) -> None:
         action = str(body.get("action") or "list").strip().lower()
         try:
             if action == "list":
-                return web.json_response({"ok": True, "items": _refs.load_ref_bank()})
+                return web.json_response(_refbank_payload())
+            if action == "sync_refmods":
+                return web.json_response({
+                    "ok": True,
+                    "items": _refs.sync_refmods_to_bank(),
+                    "audio_files": [f["name"] for f in _media.listing({"audio"})],
+                    "has_refmods": bool(_refs._refmod_module() is not None),
+                })
             if action == "save":
                 saved = _refs.upsert_ref_bank_item(body.get("item") if isinstance(body.get("item"), dict) else body, user_edited=True)
-                return web.json_response({"ok": True, "item": saved, "items": _refs.load_ref_bank()})
+                return web.json_response(_refbank_payload(item=saved))
             if action == "delete":
-                removed = _refs.delete_ref_bank_item(str(body.get("id") or ""), file_name=str(body.get("file") or ""))
-                return web.json_response({"ok": True, "removed": removed, "items": _refs.load_ref_bank()})
+                removed = _refs.delete_ref_bank_item(
+                    str(body.get("id") or ""),
+                    file_name=str(body.get("file") or ""),
+                    source=str(body.get("source") or ""),
+                )
+                return web.json_response(_refbank_payload(removed=removed))
             if action == "import_rail":
                 items = _refs.import_rail_to_ref_bank(str(body.get("ref_plan") or ""), voice_files=body.get("voice_files") or ())
-                return web.json_response({"ok": True, "items": items})
+                return web.json_response({
+                    "ok": True,
+                    "items": items,
+                    "audio_files": [f["name"] for f in _media.listing({"audio"})],
+                    "has_refmods": bool(_refs._refmod_module() is not None),
+                })
             if action == "scan":
-                fname = os.path.basename(str(body.get("file") or "").strip())
+                raw_file = str(body.get("file") or "").strip()
+                src_kind = str(body.get("source") or "image").strip().lower()
                 role = str(body.get("role") or "subject").strip().lower()
                 auto_wake = bool(body.get("auto_wake", True))
-                fpath = _media.resolve(fname)
-                if not fpath or not os.path.isfile(fpath):
-                    return web.json_response({"ok": False, "error": f"Could not resolve image in h3_refs: {fname}"})
+                rm_mod = _refs._refmod_module()
+                is_rm = (src_kind == "refmod") or (
+                    _media.resolve(os.path.basename(raw_file)) is None
+                    and rm_mod is not None
+                    and rm_mod.resolve(raw_file) is not None
+                )
                 ready, wake_msg = await ensure_writer_ready(_llm, auto_wake=auto_wake)
                 if not ready:
                     return web.json_response({"ok": False, "error": wake_msg})
@@ -264,24 +392,51 @@ def register_sandtie_routes(instance, web) -> None:
                 async def complete_fn(messages, schema=None, temperature=0.1, max_tokens=320):
                     return await _llm.complete(conn["server_url"], conn["model"], messages, schema=schema, temperature=temperature, max_tokens=max_tokens)
 
-                scanned = await _vcv.scan_reference_file(fpath, role if role in ("subject", "place", "prop") else "auto", complete_fn)
+                if is_rm:
+                    if rm_mod is None or rm_mod.resolve(raw_file) is None:
+                        return web.json_response({"ok": False, "error": f"Could not resolve RefMod: {raw_file}"})
+                    urls = await asyncio.get_running_loop().run_in_executor(
+                        None, lambda: rm_mod.vision_data_urls(raw_file, max_images=2, max_side=1024)
+                    )
+                    if not urls:
+                        return web.json_response({"ok": False, "error": f"RefMod {raw_file} has no kept look photos to Eye Scan."})
+                    prompt_key = role if role in _vcv.ROLE_PROMPTS else "subject"
+                    content = [{"type": "text", "text": _vcv.ROLE_PROMPTS[prompt_key]}]
+                    for u in urls:
+                        content.append({"type": "image_url", "image_url": {"url": u}})
+                    raw_scan = await complete_fn([{"role": "user", "content": content}], schema=None, temperature=0.2, max_tokens=260)
+                    scanned = _vcv._clean_desc(raw_scan, 480, strip_studio=(prompt_key in ("subject", "auto")))
+                    fname = _refs._clean_ref_file(raw_file, "refmod")
+                    src_save = "refmod"
+                else:
+                    fname = os.path.basename(raw_file)
+                    fpath = _media.resolve(fname)
+                    if not fpath or not os.path.isfile(fpath):
+                        return web.json_response({"ok": False, "error": f"Could not resolve image in h3_refs: {fname}"})
+                    scanned = await _vcv.scan_reference_file(fpath, role if role in ("subject", "place", "prop") else "auto", complete_fn)
+                    src_save = "image"
                 if not scanned:
                     return web.json_response({"ok": False, "error": "Eye Scan returned empty description."})
                 import re
                 cleaned = _refs.clean_subject_scan_desc(scanned) if role == "subject" else re.sub(r"^(?:Set|Prop):\s*", "", scanned, flags=re.I).strip()
-                existing = _refs.find_ref_bank_entry(file_name=fname) or {}
-                saved = _refs.upsert_ref_bank_item({
+                existing = _refs.find_ref_bank_entry(file_name=fname, source=src_save) or {}
+                saved_payload = {
                     "id": body.get("id") or existing.get("id") or "",
                     "name": body.get("name") or existing.get("name") or "",
                     "tag": body.get("tag") or existing.get("tag") or "",
                     "role": role,
                     "file": fname,
+                    "source": src_save,
                     "voice": body.get("voice") or existing.get("voice") or "",
                     "desc": cleaned or scanned,
                     "locked": body.get("locked") or existing.get("locked") or "",
                     "context": body.get("context") or existing.get("context") or "",
-                }, user_edited=True)
-                return web.json_response({"ok": True, "item": saved, "items": _refs.load_ref_bank()})
+                }
+                if src_save == "refmod":
+                    saved_payload["strength"] = body.get("strength") if "strength" in body else existing.get("strength", 1.0)
+                    saved_payload["step_curve"] = body.get("step_curve") or existing.get("step_curve") or "full"
+                saved = _refs.upsert_ref_bank_item(saved_payload, user_edited=True)
+                return web.json_response(_refbank_payload(item=saved))
             return web.json_response({"ok": False, "error": f"Unknown ref_bank action: {action}"}, status=400)
         except Exception as exc:
             return web.json_response({"ok": False, "error": str(exc)})
@@ -297,10 +452,10 @@ def register_sandtie_routes(instance, web) -> None:
         out_sec = float((body or {}).get("out_sec") or 0.0)
         auto_wake = bool((body or {}).get("auto_wake", True))
         if not video_file:
-            return web.json_response({"ok": False, "error": "Pick a video file first."})
-        vpath = _media.resolve(video_file)
+            return web.json_response({"ok": False, "error": "Pick, drop, or upload a video file first."})
+        vpath = _resolve_sandtie_video(video_file)
         if not vpath or not os.path.isfile(vpath):
-            return web.json_response({"ok": False, "error": f"Could not resolve video file: {video_file}"})
+            return web.json_response({"ok": False, "error": f"Could not resolve video file in input/ or h3_refs/: {video_file}"})
         ready, wake_msg = await ensure_writer_ready(_llm, auto_wake=auto_wake)
         if not ready:
             return web.json_response({"ok": False, "error": wake_msg})
@@ -363,7 +518,17 @@ def register_sandtie_routes(instance, web) -> None:
                 return web.json_response({"ok": False, "error": str(exc)})
 
         if not brief and not extracted_video and not (stage == "dialogue" and str(flavors.get("current_block") or plan or "").strip()):
-            return web.json_response({"ok": False, "error": "Type a scene brief (or extract a video) first."})
+            auto_bits = []
+            for dk in ("explicit", "combat", "pose", "place", "wardrobe", "character", "style"):
+                for opt in _cat.resolve_dial_opts(dk, flavors.get(dk)):
+                    lbl = _wr._clean_ui_label(opt.get("label") or "")
+                    if lbl:
+                        auto_bits.append(lbl)
+                        break
+            if auto_bits:
+                brief = "; ".join(auto_bits[:4])
+            else:
+                return web.json_response({"ok": False, "error": "Type a scene brief (or pick SandTie dials / extract a video) first."})
 
         ready, wake_msg = await ensure_writer_ready(_llm, auto_wake=auto_wake)
         if not ready:
@@ -384,7 +549,18 @@ def register_sandtie_routes(instance, web) -> None:
                 lab = {"pictures": [], "audios": []}
             ims = []
             for p in lab.get("pictures") or []:
-                url = _media.vision_data_url(p["file"]) if p.get("file") else None
+                if not p.get("file"):
+                    continue
+                url = None
+                if p.get("source") == "refmod":
+                    try:
+                        pass
+                        mems = p.get("members") if isinstance(p.get("members"), list) else None
+                        url = _refmod.vision_data_url(p["file"], member_idx=(mems[0] if mems else 0))
+                    except Exception:
+                        url = None
+                else:
+                    url = _media.vision_data_url(p["file"])
                 if url:
                     ims.append({"tag": p["tag"], "data_url": url})
             start_url = _media.vision_data_url(start_file) if start_file else None

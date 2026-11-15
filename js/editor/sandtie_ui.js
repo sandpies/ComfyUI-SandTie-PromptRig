@@ -82,6 +82,35 @@ const MSEL_CSS = `
 .h3st-chips { display: inline-flex; align-items: center; gap: 3px; background: var(--h3-sunken); border: 1px solid var(--h3-border-soft); border-radius: 3px; padding: 2px 4px; }
 .h3st-chips-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--h3-muted); padding: 0 3px; }
 .h3st-chip-on { border-color: var(--h3-accent) !important; color: var(--h3-accent) !important; background: rgba(232,255,71,0.12) !important; }
+.h3st-perf-box {
+    padding: 7px 8px; background: var(--h3-sunken);
+    border: 1px solid var(--h3-border-soft); border-radius: var(--h3-radius);
+    display: flex; flex-direction: column; gap: 6px;
+}
+.h3st-perf-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 6px;
+}
+.h3st-pcard {
+    background: var(--h3-panel); border: 1px solid var(--h3-border-soft);
+    border-radius: var(--h3-radius-sm); padding: 6px 7px; display: flex; flex-direction: column; gap: 4px;
+}
+.h3st-pcard.is-non-zero { border-color: rgba(232,255,71,0.42); }
+.h3st-pcard-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.h3st-ptit { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--h3-muted); }
+.h3st-pval { font-size: 10px; font-weight: 700; font-family: ui-monospace, Consolas, monospace; color: var(--h3-accent); }
+.h3st-psteps { display: flex; gap: 2px; flex-wrap: nowrap; }
+.h3e-root .h3st-pbtn {
+    flex: 1 1 0; min-width: 0; padding: 3px 2px; font-size: 10px; font-weight: 600;
+    background: var(--h3-sunken); color: var(--h3-muted); border: 1px solid var(--h3-border); border-radius: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.h3e-root .h3st-pbtn:hover { color: var(--h3-text); border-color: rgba(232,255,71,0.5); }
+.h3e-root .h3st-pbtn.h3st-chip-on { border-color: var(--h3-accent); background: rgba(232,255,71,0.16); color: var(--h3-accent); }
+.h3st-pdesc { font-size: 10px; color: var(--h3-faint); line-height: 1.25; }
+.h3st-aux-row {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    padding-top: 4px; border-top: 1px solid var(--h3-border-soft);
+}
 
 .h3e-msel { position: relative; flex: 1 1 170px; min-width: 140px; display: inline-flex; }
 .h3e-root .h3e-msel-btn {
@@ -104,7 +133,7 @@ const MSEL_CSS = `
 .h3e-msel-caret { flex: 0 0 auto; color: var(--h3-faint); font-size: var(--h3-fs-xs); line-height: 1; }
 .h3e-msel-pop {
     position: absolute; top: calc(100% + 3px); left: 0; z-index: 60;
-    min-width: 310px; max-width: min(460px, 92vw); width: max-content;
+    min-width: min(310px, 85vw); max-width: min(460px, 92vw); width: max-content;
     background: var(--h3-panel);
     border: 1px solid color-mix(in srgb, var(--h3-accent) 55%, var(--h3-border));
     border-radius: var(--h3-radius); box-shadow: 0 10px 28px rgba(0,0,0,0.72);
@@ -115,6 +144,7 @@ const MSEL_CSS = `
 .h3e-msel-item[hidden],
 .h3e-msel-grp[hidden] { display: none !important; }
 .h3e-msel-pop.h3e-msel-right { left: auto; right: 0; }
+.h3e-msel-pop.h3e-msel-up { top: auto; bottom: calc(100% + 3px); }
 .h3e-msel-head {
     display: flex; align-items: center; gap: 4px; padding: 5px 6px;
     background: var(--h3-bg); border-bottom: 1px solid var(--h3-border-soft);
@@ -164,6 +194,27 @@ const MSEL_CSS = `
 .h3e-msel-tag.asp-916 { color: #7dd3fc; border-color: rgba(125,211,252,0.45); background: rgba(14,116,144,0.22); }
 .h3e-msel-tag.asp-169 { color: #fcd34d; border-color: rgba(252,211,77,0.45); background: rgba(180,83,9,0.22); }
 .h3e-msel-tag.dur-tag { color: #a7f3d0; border-color: rgba(95,191,122,0.4); background: rgba(16,85,55,0.22); }
+.h3st-vdrop {
+    position: relative; width: 72px; height: 42px; flex: 0 0 72px;
+    border: 1px dashed var(--h3-border); border-radius: var(--h3-radius-sm);
+    background: var(--h3-panel); color: var(--h3-muted);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; cursor: pointer; overflow: hidden; user-select: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.h3st-vdrop:hover,
+.h3st-drawer.is-dragover .h3st-vdrop,
+.h3st-vdrop.is-dragover {
+    border-color: var(--h3-accent);
+    background: color-mix(in srgb, var(--h3-accent) 12%, var(--h3-panel));
+    color: var(--h3-text);
+}
+.h3st-drawer.is-dragover {
+    border-color: var(--h3-accent);
+    background: color-mix(in srgb, var(--h3-accent) 6%, var(--h3-sunken));
+}
+.h3st-vdrop video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.h3st-vdrop-hint { font-size: 9.5px; line-height: 1.15; padding: 2px 4px; white-space: pre-line; }
 `;
 
 function ensureMselStyle() {
@@ -177,39 +228,57 @@ function ensureMselStyle() {
 }
 
 export const BUILTIN_DIAL_COMBOS = [
-    { id: "__builtin_916_pov_intimate", label: "9:16 First-Person POV + Warm Intimate", values: { camera: "portrait_vertical_stack", light: "vip_amber_booth", energy: "medium", expression: "large", life: "large", pov: "male", talk_mode: "auto" } },
-    { id: "__builtin_anime_to_real", label: "2D Anime -> Photoreal Transition (1->2)", values: { style: "h3_sakuga_2d,h3_astro_cinema", dial_modes: { style: "sequence" }, energy: "large", expression: "large" } },
-    { id: "__builtin_neon_cyber_action", label: "Neon Cyberpunk + Action Combo", values: { light: "cyber_dual_gel", colour: "teal_orange", energy: "large", life: "large" } },
-    { id: "__builtin_slow_sensual_purr", label: "Slow Sensual Tease (Small Energy + Soft Purr)", values: { energy: "small", expression: "small", life: "medium", talk_mode: "auto" } },
-    { id: "__builtin_mirror_vertical_doggy", label: "9:16 Vanity Mirror Doggy + Warm Candlelight", values: { explicit: "standing_mirror_vanity_doggy", camera: "mirror_three_way_reflection", light: "candlelight_flicker_boudoir", ambience: "intimate_skin_foley", energy: "medium", expression: "large" } },
-    { id: "__builtin_kpop_dance_3angle", label: "K-Pop Idol 3-Angle Dance Cut + UV Stage Haze", values: { style: "korean_drama_glow", camera: "multi_angle_action_close", pose: "dance_kpop_chest_pop_body_wave,dance_gravure_s_curve_hip_roll", light: "strip_club_uv_blacklight_laser_haze", music: "kpop_girl_crush_bass_drop_124", energy: "large", expression: "large", talk_mode: "silent" } },
-    { id: "__builtin_penthouse_rain_silent", label: "Penthouse Midnight Rain + Candlelight Whisper (Silent)", values: { place: "plate_luxury_rooftop_infinity_pool", light: "candlelight_and_moonlight_split", ambience: "tokyo_love_hotel_rain_hum", music: "bedroom_lofi_rain_64", energy: "small", expression: "small", talk_mode: "silent" } },
-    { id: "__builtin_editorial_flash_glamour", label: "Editorial 35mm Flash Fashion Slow-Mo Glamour", values: { style: "editorial_vogue_flash_cinema", light: "editorial_softbox_beauty_key", camera: "dolly_push_to_ecu_eyes", music: "city_pop_80s_112", energy: "medium", expression: "medium", talk_mode: "silent" } },
-    { id: "__builtin_anime2real_water_dragon", label: "Anime2Real Water Dragon + Neon Rain Street vs Goons", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_water_breathing_dragon", fx: "vfx_anime2real_water_dragon_slash", fx_timing: "from_start", place: "plate_shibuya_rain_crosswalk_crater", wardrobe: "anime2real_demon_slayer_haori_corps", energy: "large", life: "large" } },
-    { id: "__builtin_anime2real_mixed_2d_ink", label: "Mixed-Reality 2D Cel-Slash + Photoreal Brawler", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_2d_ink_manga_mixed_reality", fx: "vfx_anime2real_2d_cel_slash_ribbons", fx_timing: "from_start", energy: "large", life: "large" } },
-    { id: "__builtin_one_take_cowgirl_transition", label: "One Continuous Take: Thong Aside -> Cowgirl Sink & Bounce", values: { explicit: "cont_panties_aside_rub_to_cowgirl_sink_to_grind", wardrobe: "partial_panties_pulled_aside", light: "candlelight_flicker_boudoir", energy: "medium", expression: "large", life: "large" } },
-    { id: "__builtin_one_take_deepthroat_facial", label: "One Continuous Take: Handjob & Lick -> Deepthroat -> Facial", values: { explicit: "cont_handjob_lick_to_deepthroat_to_swallow", camera: "portrait_vertical_stack", energy: "large", expression: "large" } },
-    { id: "__builtin_gravure_idol_s_curve_dance", label: "4K Gravure Idol S-Curve Dance + Body-Contour Pedestal", values: { style: "japanese_4k_gravure_idol_cinema", camera: "body_contour_s_curve_pedestal_glide", pose: "dance_gravure_s_curve_hip_roll,dance_kpop_chest_pop_body_wave", light: "tokyo_love_hotel_magenta_violet_velvet", colour: "peach_milk_gravure", energy: "medium", expression: "large", life: "large" } },
-    { id: "__builtin_ensemble_s1_s9_cypher_squad", label: "Multi-Character Ensemble (S1-S9): V-Formation + 360 Cypher Orbit", values: { camera: "ensemble_360_cypher_orbit_s1_s9", pose: "ensemble_v_formation_idol_squad_s1_s9", lens: "comp_ensemble_s1_s9_depth_stagger", energy: "large", life: "large" } },
-    { id: "__builtin_anime2real_senbonzakura_storm", label: "Anime2Real Bankai Senbonzakura Blade-Petal Storm", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_senbonzakura_cherry_blossom_blade_storm", fx: "vfx_anime2real_senbonzakura_petal_vortex", fx_timing: "from_start", place: "plate_anime2real_soul_society_cherry_blossom_courtyard", wardrobe: "anime2real_bleach_shihakusho_open_chest_zanpakuto", colour: "ufotable_neon_hdr_contrast", energy: "large" } },
-    { id: "__builtin_anime2real_sandevistan_blitz", label: "Anime2Real Cyberpunk Sandevistan Afterimage Blitz", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_sandevistan_afterimage_time_freeze_blitz", fx: "vfx_anime2real_sandevistan_afterimage_ribbon", fx_timing: "from_start", camera: "sandevistan_freeze_orbit_180", colour: "emerald_matrix_gunmetal", energy: "large" } },
-    { id: "__builtin_fetish_femdom_leash_worship", label: "Playbook: Collar & Leash Petplay -> Boot Worship -> Facesit", values: { explicit: "cont_femdom_leash_crawl_to_boot_lick_to_facesit_smother", fetish: "collar_leash_petplay_walk,foot_domination", wardrobe: "fetish_latex_catsuit_unzipped", talkstyle: "velvet_hypnotic_domme_count", energy: "large", expression: "large" } },
-    { id: "__builtin_under_desk_secret_to_cowgirl", label: "Secret Under-Desk Stroke & Deepthroat -> Executive Lap Cowgirl", values: { explicit: "cont_under_desk_two_hand_stroke_to_deepthroat_to_lap_cowgirl", fetish: "office_under_desk_secret", place: "plate_executive_boardroom_under_mahogany_table", wardrobe: "fetish_office_siren_skirt", talkstyle: "secretive_office_whisper", energy: "medium", expression: "large" } },
-    { id: "__builtin_s1_vs_s2_katana_rain_duel", label: "S1 vs S2: Rainy Lantern Alley Katana Sparks Duel", values: { style: "john_wick_neon_gunfu", combat: "combat_s1_s2_mirror_blade_duel", fx: "vfx_sword_spark_shower", fx_timing: "from_start", place: "plate_rainy_chinatown_lantern_alley", light: "rain_neon_puddle_bounce", colour: "crimson_john_wick_gold", ambience: "neon_alley_puddle_footsteps", music: "taiko_war_drums_138", energy: "large", life: "large" } },
-    { id: "__builtin_s1_s2_tag_team_corridor_clear", label: "S1 + S2 Tag-Team: Corridor Sweep -> Vault Flying Knee Brawl", values: { style: "john_wick_neon_gunfu", combat: "combat_s1_s2_tag_team_combo_finisher", camera: "track_side", light: "cyber_dual_gel", fx: "vfx_kinetic_shockwave_dust_ring", fx_timing: "from_start", music: "john_wick_club_techno_132", energy: "large" } },
-    { id: "__builtin_parkour_table_slide_gunfu", label: "Parkour Gun-Fu: Boardroom Table Slide & Brass Rain", values: { style: "john_wick_neon_gunfu", combat: "combat_env_table_slide_gun_sweep", fx: "vfx_muzzle_brass_storm", fx_timing: "from_start", place: "plate_executive_boardroom_glass_table", camera: "whip_pan_reaction_match", music: "john_wick_club_techno_132", energy: "large" } },
-    { id: "__builtin_anime2real_domain_void_shrine", label: "Anime2Real: Domain Shrine Fracture & Crimson Slashes", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_domain_void_shrine_cut", fx: "vfx_crimson_lightning_black_sparks", fx_timing: "from_start", place: "plate_shibuya_rain_crosswalk_crater", colour: "emerald_anime_midnight", music: "anime_orchestral_choir_148", energy: "large" } },
-    { id: "__builtin_wuxia_moonlit_bamboo_swordplay", label: "90s Wuxia Cinema: Moonlit Snowy Bamboo Jian Duel", values: { style: "wuxia_wirefu_cinema", combat: "combat_s1_s2_sword_vs_barehand_catch", place: "plate_snowy_bamboo_forest_moonlight", wardrobe: "action_traditional_samurai_kimono_slit", colour: "emerald_anime_midnight", ambience: "dojo_wood_creak_wind", music: "taiko_war_drums_138", energy: "large" } },
-    { id: "__builtin_bdsm_shibari_candlelit_wall", label: "BDSM Shibari: Crimson Rope Chest Harness + Fireplace Chalet", values: { explicit: "bdsm_shibari_chest_harness_wall_tie", fetish: "shibari_rope_chest_diamonds", wardrobe: "fetish_shibari_crimson_rope_harness", place: "plate_satin_four_poster_fireplace_cabin", light: "fireplace_ember_warm_low", ambience: "fireplace_ember_pop_silk", energy: "medium", expression: "large" } },
-    { id: "__builtin_lesbian_steamy_shower_duo", label: "Steamy Shower: Wet Glass Press & Two-Subject Embrace", values: { explicit: "lesbian_standing_shower_breast_press_thigh_ride", wardrobe: "nude_both_partners", place: "plate_glass_walled_rain_shower_penthouse", fx: "fx_steam_mirror_condensation_clear", fx_timing: "from_start", ambience: "bathhouse_steam_water_drip", energy: "medium", expression: "large" } },
-    { id: "__builtin_pegging_dominant_harness_bed", label: "Domme Pegging: Leather Harness Strap-On Doggy", values: { explicit: "cont_strapon_harness_buckle_to_pegging_doggy", fetish: "pegging,strap_on", wardrobe: "fetish_strapon_harness_nude", light: "red_velvet_boudoir", ambience: "intimate_skin_foley", energy: "medium", expression: "large" } },
-    { id: "__builtin_90s_erotic_thriller_noir", label: "90s Erotic Thriller: Venetian Blinds Noir Office Dialogue", values: { style: "erotic_thriller_90s_35mm", place: "executive_corner_office_midnight", light: "sunset_blinds_gold", wardrobe: "fetish_office_siren_skirt", talkstyle: "husky_velvet", music: "sultry_jazz_noir_sax_72", colour: "champagne_honey_glow", energy: "small", expression: "medium" } },
-    { id: "__builtin_yacht_sunset_continuous_take", label: "Luxury Superyacht Sunset: Swimsuit Climb-Out -> Wet Missionary", values: { explicit: "cont_pool_edge_climb_out_to_wet_missionary", fetish: "yacht_sunpad_ocean_wind", place: "plate_superyacht_aft_sunpad_mediterranean", wardrobe: "partial_bikini_strings_untied_hanging", light: "sunset_silhouette_halo_rim", colour: "champagne_honey_glow", energy: "medium", expression: "large" } },
-    { id: "__builtin_candlelit_aftercare_whisper", label: "Post-Climax Aftercare: Alpine Fireplace Cuddle & Husky Murmur", values: { fetish: "aftercare_cuddle_pillow_talk", place: "plate_satin_four_poster_fireplace_cabin", wardrobe: "partial_silk_robe_open_front", light: "fireplace_ember_warm_low", talkstyle: "husky_aftercare_murmur", ambience: "fireplace_ember_pop_silk", music: "ethereal_shoegaze_dream_95", energy: "small", expression: "medium" } },
-    { id: "__builtin_switch_banter_displaced_lace", label: "Switch Banter & Displaced Lace (9:16 Continuous)", values: { explicit: "cont_panties_aside_rub_to_cowgirl_sink_to_grind", wardrobe: "partial_panties_pulled_aside", place: "plate_penthouse_master_bed_mirror", light: "candlelight_flicker_boudoir", talkstyle: "switch_power_reversal_tease", ambience: "intimate_skin_foley", energy: "medium", expression: "large" } },
-    { id: "__builtin_shower_glass_press_lift_916", label: "Steamy Shower Glass Press -> Standing Lift (9:16 One Take)", values: { explicit: "cont_shower_glass_press_to_standing_carry", fetish: "glass_press_shower_window", wardrobe: "nude_wet_shower", place: "plate_glass_walled_rain_shower_penthouse", fx: "fx_steam_mirror_condensation_clear", fx_timing: "from_start", talkstyle: "pillow_giggle_banter", ambience: "bathhouse_steam_water_drip", energy: "medium", expression: "large" } },
-    { id: "__builtin_car_backseat_fogged_916", label: "Rainy Car Backseat Fogged Window Straddle (9:16 Hushed)", values: { explicit: "cont_car_backseat_fogged_glass_straddle_to_climax", place: "plate_rain_car_backseat_city_lights", wardrobe: "partial_dress_hiked_waist", light: "rain_neon_puddle_bounce", talkstyle: "risk_adrenaline_hush", ambience: "rain_thunder_window_glass", energy: "medium", expression: "large" } },
-    { id: "__builtin_desk_spin_ledger_169", label: "Executive Desk Chair Spin -> Bent-Over Ledger (16:9)", values: { explicit: "cont_desk_chair_spin_to_bent_over_ledger", fetish: "office_under_desk_secret", place: "executive_corner_office_midnight", wardrobe: "fetish_office_siren_skirt", light: "sunset_blinds_gold", talkstyle: "cocky_dominant_commentary", ambience: "penthouse_night_hum", energy: "medium", expression: "large" } },
+    { id: "__builtin_noir_rainy_cafe_confession", label: "SFW Noir Drama: Rainy Corner Café Quiet Confession", values: { style: "h3_astro_cinema", place: "cafe_rain_window", light: "soft_natural_window", wardrobe: "tailored_black_blazer_trousers", talkstyle: "earnest_dramatic_confession", ambience: "cafe", music: "piano_cello_65", colour: "kodak_vision3_500t", motion: "slow", energy: "calm", expression: "subtle", expr_read: "tense", life: "natural" } },
+    { id: "__builtin_rooftop_skyline_banter", label: "SFW Cinema: Golden-Hour Rooftop Skyline Talk", values: { style: "h3_astro_cinema", place: "plate_luxury_rooftop_infinity_pool", light: "sunset_silhouette_halo_rim", wardrobe: "casual_silk_camisole_denim", talkstyle: "warm_witty_banter", colour: "fuji_eterna_soft", music: "ethereal_shoegaze_dream_95", motion: "slow", energy: "calm", expression: "natural", expr_read: "warm", life: "alive" } },
+    { id: "__builtin_kdrama_subway_rain_walk", label: "SFW K-Drama: Neon Alley Rain Walk & Look-Back", values: { style: "korean_drama_glow", place: "neon_night_street", light: "neon_rain_window_caustics", wardrobe: "street_cropped_jacket_cargo", talkstyle: "natural_conversational", ambience: "rain_heavy", music: "piano_cello_65", motion: "natural", energy: "steady", expression: "natural", expr_read: "warm", life: "alive" } },
+    { id: "__builtin_loft_studio_vlog_host", label: "SFW Everyday: Sunlit Artist Loft Camera Vlog", values: { style: "h3_astro_cinema", place: "sunlit_loft_studio", light: "soft_natural_light", wardrobe: "casual_silk_camisole_denim", talkstyle: "bright_vlog_host", ambience: "room_tone", music: "city_pop_80s_112", motion: "natural", energy: "charged", expression: "vivid", expr_read: "warm", life: "alive" } },
+    { id: "__builtin_scifi_starship_standoff", label: "SFW Sci-Fi Thriller: Orbital Observation Deck Briefing", values: { style: "h3_astro_cinema", place: "starship_observation_deck", light: "chiaroscuro_hard_slash", wardrobe: "street_cyberpunk_holo_jacket_straps", talkstyle: "calm_tactical_briefing", music: "dark_cello_thriller_pulse_90", motion: "slow", energy: "steady", expression: "stoic", expr_read: "tense", life: "natural" } },
+    { id: "__builtin_douyin_kemusan_neon_street_916", label: "SFW Douyin Trend: Kemusan (科目三) Street-Snap Neon Dance (9:16)", values: { style: "korean_drama_glow", pose: "dance_douyin_subject_three_kemusan,dance_douyin_slowmo_street_strut_wink", place: "neon_night_street", light: "neon_rain_window_caustics", music: "city_pop_80s_112", motion: "max", energy: "peak", expression: "vivid", expr_read: "sly", life: "hyper", talk_mode: "silent" } },
+    { id: "__builtin_douyin_guofeng_bamboo_fan_916", label: "SFW Douyin Guofeng: Moonlit Bamboo Silk-Fan Spin Dance (9:16)", values: { style: "wuxia_wirefu_cinema", pose: "dance_douyin_guofeng_sleeve_fan_snap", place: "plate_snowy_bamboo_forest_moonlight", wardrobe: "action_traditional_samurai_kimono_slit", music: "taiko_war_drums_138", motion: "brisk", energy: "steady", expression: "vivid", expr_read: "stoic", life: "hyper", talk_mode: "silent" } },
+    { id: "__builtin_tiktok_espresso_paparazzi_916", label: "SFW TikTok Viral: Espresso Breezy Groove + 2000s Paparazzi Flash (9:16)", values: { style: "viral_2000s_paparazzi_flash", pose: "dance_tiktok_espresso_breezy_step,dance_tiktok_camera_tap_transition", place: "plate_mirror_dance_rehearsal_studio", music: "french_touch_filter_house_120", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sly", life: "alive", talk_mode: "silent" } },
+    { id: "__builtin_916_pov_intimate", label: "9:16 First-Person POV + Warm Intimate", values: { camera: "portrait_vertical_stack", light: "vip_amber_booth", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", pov: "male", talk_mode: "auto" } },
+    { id: "__builtin_anime_to_real", label: "2D Anime -> Photoreal Transition (1->2)", values: { style: "h3_sakuga_2d,h3_astro_cinema", dial_modes: { style: "sequence" }, motion: "brisk", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_neon_cyber_action", label: "Neon Cyberpunk + Action Combo", values: { light: "cyber_dual_gel", colour: "teal_orange", motion: "max", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_slow_sensual_purr", label: "Slow Sensual Tease (Hushed Energy + Soft Breath)", values: { motion: "slow", energy: "hush", expression: "subtle", expr_read: "sensual", life: "natural", talk_mode: "auto" } },
+    { id: "__builtin_3cut_morning_suite_916", label: "NSFW 3-Cut Morning Suite: Oral -> Glass Shower -> Vanity Mirror (9:16)", values: { explicit: "multi_pos_3cut_morning_bed_shower_vanity", wardrobe: "nude_full", light: "soft_natural_light", ambience: "bathhouse_steam_water_drip", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_3cut_office_trilogy_916", label: "NSFW 3-Cut Office Trilogy: Under-Desk -> Chair Spin -> Skyline Glass (9:16)", values: { explicit: "multi_pos_office_under_desk_to_chair_spin_to_glass_wall", place: "executive_corner_office_midnight", wardrobe: "fetish_office_siren_skirt", light: "sunset_blinds_gold", ambience: "penthouse_night_hum", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sly", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_mirror_vertical_doggy", label: "9:16 Vanity Mirror Doggy + Warm Candlelight", values: { explicit: "standing_mirror_vanity_doggy", camera: "mirror_three_way_reflection", light: "candlelight_flicker_boudoir", ambience: "intimate_skin_foley", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_kpop_dance_3angle", label: "K-Pop Idol 3-Angle Dance Cut + UV Stage Haze", values: { style: "korean_drama_glow", camera: "multi_angle_action_close", pose: "dance_kpop_chest_pop_body_wave,dance_gravure_s_curve_hip_roll", light: "strip_club_uv_blacklight_laser_haze", music: "kpop_girl_crush_bass_drop_124", motion: "max", energy: "peak", expression: "vivid", expr_read: "sly", life: "hyper", talk_mode: "silent" } },
+    { id: "__builtin_penthouse_rain_silent", label: "Penthouse Midnight Rain + Candlelight Whisper (Silent)", values: { place: "plate_luxury_rooftop_infinity_pool", light: "candlelight_and_moonlight_split", ambience: "tokyo_love_hotel_rain_hum", music: "bedroom_lofi_rain_64", motion: "slow", energy: "hush", expression: "subtle", expr_read: "warm", life: "natural", talk_mode: "silent" } },
+    { id: "__builtin_editorial_flash_glamour", label: "Editorial 35mm Flash Fashion Slow-Mo Glamour", values: { style: "editorial_vogue_flash_cinema", light: "editorial_softbox_beauty_key", camera: "dolly_push_to_ecu_eyes", music: "city_pop_80s_112", motion: "slow", energy: "steady", expression: "natural", expr_read: "stoic", life: "natural", talk_mode: "silent" } },
+    { id: "__builtin_anime2real_water_dragon", label: "Anime2Real Water Dragon + Neon Rain Street vs Goons", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_water_breathing_dragon", fx: "vfx_anime2real_water_dragon_slash", fx_timing: "from_start", place: "plate_shibuya_rain_crosswalk_crater", wardrobe: "anime2real_demon_slayer_haori_corps", motion: "max", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_anime2real_mixed_2d_ink", label: "Mixed-Reality 2D Cel-Slash + Photoreal Brawler", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_2d_ink_manga_mixed_reality", fx: "vfx_anime2real_2d_cel_slash_ribbons", fx_timing: "from_start", motion: "max", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_one_take_cowgirl_transition", label: "One Continuous Take: Thong Aside -> Cowgirl Sink & Bounce", values: { explicit: "cont_panties_aside_rub_to_cowgirl_sink_to_grind", wardrobe: "partial_panties_pulled_aside", light: "candlelight_flicker_boudoir", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_one_take_deepthroat_facial", label: "One Continuous Take: Handjob & Lick -> Deepthroat -> Facial", values: { explicit: "cont_handjob_lick_to_deepthroat_to_swallow", camera: "portrait_vertical_stack", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_gravure_idol_s_curve_dance", label: "4K Gravure Idol S-Curve Dance + Body-Contour Pedestal", values: { style: "japanese_4k_gravure_idol_cinema", camera: "body_contour_s_curve_pedestal_glide", pose: "dance_gravure_s_curve_hip_roll,dance_kpop_chest_pop_body_wave", light: "tokyo_love_hotel_magenta_violet_velvet", colour: "peach_milk_gravure", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "silent" } },
+    { id: "__builtin_ensemble_s1_s9_cypher_squad", label: "Multi-Character Ensemble (S1-S9): V-Formation + 360 Cypher Orbit", values: { camera: "ensemble_360_cypher_orbit_s1_s9", pose: "ensemble_v_formation_idol_squad_s1_s9", lens: "comp_ensemble_s1_s9_depth_stagger", motion: "brisk", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_anime2real_senbonzakura_storm", label: "Anime2Real Bankai Senbonzakura Blade-Petal Storm", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_senbonzakura_cherry_blossom_blade_storm", fx: "vfx_anime2real_senbonzakura_petal_vortex", fx_timing: "from_start", place: "plate_anime2real_soul_society_cherry_blossom_courtyard", wardrobe: "anime2real_bleach_shihakusho_open_chest_zanpakuto", colour: "ufotable_neon_hdr_contrast", motion: "brisk", energy: "peak", expression: "stoic", expr_read: "stoic", life: "hyper" } },
+    { id: "__builtin_anime2real_sandevistan_blitz", label: "Anime2Real Cyberpunk Sandevistan Afterimage Blitz", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_sandevistan_afterimage_time_freeze_blitz", fx: "vfx_anime2real_sandevistan_afterimage_ribbon", fx_timing: "from_start", camera: "sandevistan_freeze_orbit_180", colour: "emerald_matrix_gunmetal", motion: "max", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_fetish_femdom_leash_worship", label: "Playbook: Collar & Leash Petplay -> Boot Worship -> Facesit", values: { explicit: "cont_femdom_leash_crawl_to_boot_lick_to_facesit_smother", fetish: "collar_leash_petplay_walk,foot_domination", wardrobe: "fetish_latex_catsuit_unzipped", talkstyle: "velvet_hypnotic_domme_count", motion: "slow", energy: "charged", expression: "vivid", expr_read: "sly", life: "alive" } },
+    { id: "__builtin_under_desk_secret_to_cowgirl", label: "Secret Under-Desk Stroke & Deepthroat -> Executive Lap Cowgirl", values: { explicit: "cont_under_desk_two_hand_stroke_to_deepthroat_to_lap_cowgirl", fetish: "office_under_desk_secret", place: "plate_executive_boardroom_under_mahogany_table", wardrobe: "fetish_office_siren_skirt", talkstyle: "secretive_office_whisper", motion: "natural", energy: "hush", expression: "vivid", expr_read: "sly", life: "alive" } },
+    { id: "__builtin_s1_vs_s2_katana_rain_duel", label: "S1 vs S2: Rainy Lantern Alley Katana Sparks Duel", values: { style: "john_wick_neon_gunfu", combat: "combat_s1_s2_mirror_blade_duel", fx: "vfx_sword_spark_shower", fx_timing: "from_start", place: "plate_rainy_chinatown_lantern_alley", light: "rain_neon_puddle_bounce", colour: "crimson_john_wick_gold", ambience: "neon_alley_puddle_footsteps", music: "taiko_war_drums_138", motion: "max", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_s1_s2_tag_team_corridor_clear", label: "S1 + S2 Tag-Team: Corridor Sweep -> Vault Flying Knee Brawl", values: { style: "john_wick_neon_gunfu", combat: "combat_s1_s2_tag_team_combo_finisher", camera: "track_side", light: "cyber_dual_gel", fx: "vfx_kinetic_shockwave_dust_ring", fx_timing: "from_start", music: "john_wick_club_techno_132", motion: "max", energy: "peak", expression: "vivid", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_parkour_table_slide_gunfu", label: "Parkour Gun-Fu: Boardroom Table Slide & Brass Rain", values: { style: "john_wick_neon_gunfu", combat: "combat_env_table_slide_gun_sweep", fx: "vfx_muzzle_brass_storm", fx_timing: "from_start", place: "plate_executive_boardroom_glass_table", camera: "whip_pan_reaction_match", music: "john_wick_club_techno_132", motion: "max", energy: "peak", expression: "stoic", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_anime2real_domain_void_shrine", label: "Anime2Real: Domain Shrine Fracture & Crimson Slashes", values: { style: "anime2real_live_action_vfx", combat: "combat_anime2real_domain_void_shrine_cut", fx: "vfx_crimson_lightning_black_sparks", fx_timing: "from_start", place: "plate_shibuya_rain_crosswalk_crater", colour: "emerald_anime_midnight", music: "anime_orchestral_choir_148", motion: "slow", energy: "peak", expression: "stoic", expr_read: "stoic", life: "hyper" } },
+    { id: "__builtin_wuxia_moonlit_bamboo_swordplay", label: "90s Wuxia Cinema: Moonlit Snowy Bamboo Jian Duel", values: { style: "wuxia_wirefu_cinema", combat: "combat_s1_s2_sword_vs_barehand_catch", place: "plate_snowy_bamboo_forest_moonlight", wardrobe: "action_traditional_samurai_kimono_slit", colour: "emerald_anime_midnight", ambience: "dojo_wood_creak_wind", music: "taiko_war_drums_138", motion: "brisk", energy: "charged", expression: "stoic", expr_read: "intense", life: "hyper" } },
+    { id: "__builtin_bdsm_shibari_candlelit_wall", label: "BDSM Shibari: Crimson Rope Chest Harness + Fireplace Chalet", values: { explicit: "bdsm_shibari_chest_harness_wall_tie", fetish: "shibari_rope_chest_diamonds", wardrobe: "fetish_shibari_crimson_rope_harness", place: "plate_satin_four_poster_fireplace_cabin", light: "fireplace_ember_warm_low", ambience: "fireplace_ember_pop_silk", motion: "slow", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_lesbian_steamy_shower_duo", label: "Steamy Shower: Wet Glass Press & Two-Subject Embrace", values: { explicit: "lesbian_standing_shower_breast_press_thigh_ride", wardrobe: "nude_both_partners", place: "plate_glass_walled_rain_shower_penthouse", fx: "fx_steam_mirror_condensation_clear", fx_timing: "from_start", ambience: "bathhouse_steam_water_drip", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_pegging_dominant_harness_bed", label: "Domme Pegging: Leather Harness Strap-On Doggy", values: { explicit: "cont_strapon_harness_buckle_to_pegging_doggy", fetish: "pegging,strap_on", wardrobe: "fetish_strapon_harness_nude", light: "red_velvet_boudoir", ambience: "intimate_skin_foley", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sly", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_90s_erotic_thriller_noir", label: "90s Erotic Thriller: Venetian Blinds Noir Office Dialogue", values: { style: "erotic_thriller_90s_35mm", place: "executive_corner_office_midnight", light: "sunset_blinds_gold", wardrobe: "fetish_office_siren_skirt", talkstyle: "husky_velvet", music: "sultry_jazz_noir_sax_72", colour: "champagne_honey_glow", motion: "slow", energy: "calm", expression: "natural", expr_read: "sly", life: "natural" } },
+    { id: "__builtin_yacht_sunset_continuous_take", label: "Luxury Superyacht Sunset: Swimsuit Climb-Out -> Wet Missionary", values: { explicit: "cont_pool_edge_climb_out_to_wet_missionary", fetish: "yacht_sunpad_ocean_wind", place: "plate_superyacht_aft_sunpad_mediterranean", wardrobe: "partial_bikini_strings_untied_hanging", light: "sunset_silhouette_halo_rim", colour: "champagne_honey_glow", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_candlelit_aftercare_whisper", label: "Post-Climax Aftercare: Alpine Fireplace Cuddle & Husky Murmur", values: { fetish: "aftercare_cuddle_pillow_talk", place: "plate_satin_four_poster_fireplace_cabin", wardrobe: "partial_silk_robe_open_front", light: "fireplace_ember_warm_low", talkstyle: "husky_aftercare_murmur", ambience: "fireplace_ember_pop_silk", music: "ethereal_shoegaze_dream_95", motion: "freeze", energy: "hush", expression: "subtle", expr_read: "warm", life: "natural" } },
+    { id: "__builtin_switch_banter_displaced_lace", label: "Switch Banter & Displaced Lace (9:16 Continuous)", values: { explicit: "cont_panties_aside_rub_to_cowgirl_sink_to_grind", wardrobe: "partial_panties_pulled_aside", place: "plate_penthouse_master_bed_mirror", light: "candlelight_flicker_boudoir", talkstyle: "switch_power_reversal_tease", ambience: "intimate_skin_foley", motion: "natural", energy: "steady", expression: "vivid", expr_read: "sly", life: "alive" } },
+    { id: "__builtin_shower_glass_press_lift_916", label: "Steamy Shower Glass Press -> Standing Lift (9:16 One Take)", values: { explicit: "cont_shower_glass_press_to_standing_carry", fetish: "glass_press_shower_window", wardrobe: "nude_wet_shower", place: "plate_glass_walled_rain_shower_penthouse", fx: "fx_steam_mirror_condensation_clear", fx_timing: "from_start", talkstyle: "pillow_giggle_banter", ambience: "bathhouse_steam_water_drip", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sensual", life: "alive" } },
+    { id: "__builtin_car_backseat_fogged_916", label: "Rainy Car Backseat Fogged Window Straddle (9:16 Hushed)", values: { explicit: "cont_car_backseat_fogged_glass_straddle_to_climax", place: "plate_rain_car_backseat_city_lights", wardrobe: "partial_dress_hiked_waist", light: "rain_neon_puddle_bounce", talkstyle: "risk_adrenaline_hush", ambience: "rain_thunder_window_glass", motion: "natural", energy: "hush", expression: "vivid", expr_read: "sensual", life: "alive" } },
+    { id: "__builtin_desk_spin_ledger_169", label: "Executive Desk Chair Spin -> Bent-Over Ledger (16:9)", values: { explicit: "cont_desk_chair_spin_to_bent_over_ledger", fetish: "office_under_desk_secret", place: "executive_corner_office_midnight", wardrobe: "fetish_office_siren_skirt", light: "sunset_blinds_gold", talkstyle: "cocky_dominant_commentary", ambience: "penthouse_night_hum", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sly", life: "alive" } },
+    { id: "__builtin_tiktok_water_mirror_dance_916", label: "TikTok 'Water' Hip-Shake + Ending Fairy Mirror Studio (9:16)", values: { style: "korean_drama_glow", pose: "dance_tiktok_water_hip_shake_hair_sweep,dance_kpop_ending_fairy_breath_hair_tuck", place: "plate_mirror_dance_rehearsal_studio", light: "strip_club_uv_blacklight_laser_haze", music: "kpop_girl_crush_bass_drop_124", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "sly", life: "alive", talk_mode: "silent" } },
+    { id: "__builtin_kpop_sticky_arch_heels_uv_916", label: "K-Pop Sultry Arch + Heels Kick Club Flow (9:16)", values: { style: "japanese_4k_gravure_idol_cinema", pose: "dance_kpop_sticky_arch_hip_sway_wink,dance_kpop_heels_kick_plant_hip_sway", place: "neon_strip_club_pole", light: "club_laser_strobe_haze", music: "club_house_124", motion: "brisk", energy: "peak", expression: "vivid", expr_read: "sensual", life: "hyper", talk_mode: "silent" } },
+    { id: "__builtin_tiktok_bedroom_siren_cozy_916", label: "TikTok Cozy Hoodie Bedroom Bounce + Siren Eyes (9:16)", values: { pose: "dance_tiktok_cozy_bedroom_pajama_heart,dance_tiktok_siren_eyes_collarbone_lip_bite", wardrobe: "street_oversized_boyfriend_hoodie_bare_legs", place: "plate_penthouse_master_bed_mirror", light: "candlelight_flicker_boudoir", music: "dark_rnb_sub_bass_68", motion: "slow", energy: "calm", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "silent" } },
+    { id: "__builtin_duet_tiktok_mirror_sync_169", label: "Duet Mirror Rehearsal: Synced Step-Touch, Spin & Laugh (16:9)", values: { pose: "dance_duet_kpop_mirror_studio_rehearsal", place: "plate_mirror_dance_rehearsal_studio", light: "bathroom_vanity_mirror_bulbs", music: "french_touch_filter_house_120", motion: "brisk", energy: "charged", expression: "vivid", expr_read: "warm", life: "alive", talk_mode: "silent" } },
+    { id: "__builtin_club_pole_twerk_heels_916", label: "Club Brass Pole 360 Spin -> Wall Squat Twerk (9:16)", values: { pose: "dance_pole_orbit_spin_slow_slide,dance_wall_squat_twerk_glance", place: "neon_strip_club_pole", light: "strip_club_uv_blacklight_laser_haze", music: "dark_velvet_weeknd_synth_rnb_75", motion: "natural", energy: "charged", expression: "vivid", expr_read: "sensual", life: "hyper", talk_mode: "silent" } },
+    { id: "__builtin_elevator_coat_flash_rear_916", label: "Mirrored Elevator Trench-Coat Flash -> Rear Entry (9:16)", values: { explicit: "cont_elevator_coat_flash_to_mirror_rear_entry", fetish: "elevator_risk_door_closed", place: "plate_glass_elevator_skyline_shaft", wardrobe: "partial_skirt_bunched_hips", talkstyle: "risk_adrenaline_hush", motion: "natural", energy: "hush", expression: "vivid", expr_read: "sensual", life: "alive" } },
+    { id: "__builtin_morning_sunbeam_cowgirl_916", label: "Sunlit Morning Linen Wake-Up -> Lazy Chest-to-Chest Cowgirl (9:16)", values: { explicit: "cont_morning_stretch_under_duvet_to_lazy_cowgirl", fetish: "morning_wake_up_somno_tease", place: "penthouse_silk_bedroom", light: "soft_natural_window", colour: "champagne_honey_glow", ambience: "silk_sheets_skin_breath", motion: "slow", energy: "calm", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
+    { id: "__builtin_female_pov_missionary_916", label: "Female POV Looking Up: Intense Missionary Eye-Lock (9:16)", values: { explicit: "pov_female_looking_up_missionary", place: "penthouse_silk_bedroom", light: "candlelight_flicker_boudoir", ambience: "silk_sheets_skin_breath", pov: "female", motion: "natural", energy: "charged", expression: "vivid", expr_read: "sensual", life: "alive", talk_mode: "auto" } },
 ];
 
 const ALL_DIAL_KEYS = [
@@ -232,7 +301,7 @@ const SECONDARY_DIALS = [
     ["lens", "Optics · Auto"],
     ["colour", "Grade · Auto"],
     ["fx", "FX · None"],
-    ["pose", "Pose · Auto"],
+    ["pose", "Dance / Pose · Auto"],
     ["fetish", "Playbook · Off"],
     ["character", "Cast Type · Rail"],
     ["tv_show", "Genre · Auto"],
@@ -355,17 +424,75 @@ function createSandTieCore(node, {
     isBusy,
     standalone = false,
     onApplyStandalone = null,
+    onDialsChanged = null,
     legacyButtons = null,
 }) {
     ensureMselStyle();
 
     const defaultFlavors = {
         time_tied: true, kinetic_grip: true, eye_scan: true, double_knot: true, wake_writer: true,
-        fx_timing: "delayed_mid", talk_mode: "auto", life: "medium", energy: "medium", expression: "medium", pov: "off",
+        link_prev_hop: false,
+        fx_timing: "delayed_mid", talk_mode: "auto",
+        motion: "natural", life: "natural", energy: "steady", expression: "natural", expr_read: "auto",
+        pov: "off", steering_bind: false, steering_scope: "blocks_0_24 (voice safe)",
         camera: "", light: "", lens: "", fx: "", style: "", colour: "", place: "", wardrobe: "",
         combat: "", explicit: "", fetish: "", pose: "", character: "", tv_show: "", era: "",
         talkstyle: "", accent: "", ambience: "", music: "", dial_modes: {},
     };
+
+    const PERF_LEVEL_SPEC = {
+        motion: [
+            ["freeze", "Freeze", -2.0, "Near-still anchored stance"],
+            ["slow", "Slow", -1.0, "Unhurried deliberate travel"],
+            ["natural", "Nat", 0.0, "Lifelike physical speed"],
+            ["brisk", "Brisk", 1.0, "Crisp athletic snap"],
+            ["max", "Max", 2.0, "High-velocity burst motion"],
+        ],
+        energy: [
+            ["hush", "Hush", -2.0, "Whisper-quiet tense poise"],
+            ["calm", "Calm", -1.0, "Relaxed conversational tone"],
+            ["steady", "Steady", 0.0, "Balanced dramatic drive"],
+            ["charged", "Charged", 1.0, "Spirited urgent projection"],
+            ["peak", "Peak", 2.0, "Peak dramatic intensity"],
+        ],
+        expression: [
+            ["stoic", "Stoic", -2.0, "Minimal deadpan restraint"],
+            ["subtle", "Subtle", -1.0, "Quiet eye/brow micro-reads"],
+            ["natural", "Nat", 0.0, "Clear readable facial turns"],
+            ["vivid", "Vivid", 1.0, "Expressive charismatic acting"],
+            ["theatrical", "Theat", 2.0, "Bold theatrical expression"],
+        ],
+        life: [
+            ["lock", "Lock", -2.0, "Quiet blinks & breath only"],
+            ["subtle", "Subtle", -1.0, "Calm room air & breath"],
+            ["natural", "Nat", 0.0, "Natural breath & ambient drift"],
+            ["alive", "Alive", 1.0, "Active hair/cloth & prop life"],
+            ["hyper", "Hyper", 2.0, "Full layered kinetic environment"],
+        ],
+    };
+
+    function normPerfVal(axis, val) {
+        const s = String(val ?? "").trim().toLowerCase();
+        const aliasMap = {
+            motion: { small: "slow", medium: "natural", large: "max", still: "freeze", nat: "natural", fast: "brisk", explosive: "max" },
+            energy: { small: "calm", medium: "steady", large: "peak", hushed: "hush", natural: "steady", high: "charged" },
+            expression: { small: "subtle", medium: "natural", large: "theatrical", deadpan: "stoic", nat: "natural", theat: "theatrical" },
+            life: { small: "subtle", medium: "natural", large: "hyper", locked: "lock", nat: "natural" },
+        };
+        const mapped = aliasMap[axis]?.[s] || s;
+        const rows = PERF_LEVEL_SPEC[axis] || [];
+        if (rows.some((r) => r[0] === mapped)) return mapped;
+        return rows[2]?.[0] || "natural";
+    }
+
+    function normalizePerfFlavors(obj) {
+        if (!obj || typeof obj !== "object") return;
+        for (const ax of ["motion", "energy", "expression", "life"]) {
+            obj[ax] = normPerfVal(ax, obj[ax]);
+        }
+        if (!obj.expr_read) obj.expr_read = "auto";
+        if (!obj.steering_scope) obj.steering_scope = "blocks_0_24 (voice safe)";
+    }
 
     function loadFlavors() {
         try {
@@ -378,6 +505,8 @@ function createSandTieCore(node, {
             if ("vision_scan" in raw && !("eye_scan" in raw)) merged.eye_scan = Boolean(raw.vision_scan);
             if ("pass2_refine" in raw && !("double_knot" in raw)) merged.double_knot = Boolean(raw.pass2_refine);
             if ("auto_wake" in raw && !("wake_writer" in raw)) merged.wake_writer = Boolean(raw.auto_wake);
+            if (!("motion" in raw) && "energy" in raw) merged.motion = normPerfVal("motion", raw.energy);
+            normalizePerfFlavors(merged);
             merged.dial_modes = Object.assign({}, raw?.dial_modes || {});
             return merged;
         } catch {
@@ -394,6 +523,7 @@ function createSandTieCore(node, {
             node.properties ??= {};
             node.properties[FLAVOR_PROP] = Object.assign({}, flavors, { dial_modes: Object.assign({}, flavors.dial_modes || {}) });
         }
+        try { onDialsChanged?.(); } catch (_) {}
     }
 
     const undoStack = [];
@@ -445,11 +575,12 @@ function createSandTieCore(node, {
         lbl.append(chk, el("span", null, `${icon} ${text}`));
         return { lbl, chk };
     }
-    const swTime = makeSw("time_tied", "⏱", "Time-Tied", "Lock exact [Shot N] cuts and MM:SS.mmm beat windows");
-    const swKinetic = makeSw("kinetic_grip", "⚡", "Kinetic Grip", "Chained physical verbs, hand roles & clear facial shifts");
-    const swEye = makeSw("eye_scan", "👁", "Eye Scan", "2.5 MP cached reference scan for ethnicity, features & attire");
-    const swDouble = makeSw("double_knot", "✧", "Double-Knot", "Pass-2 continuity audit locking tags, domains & zero negations");
-    const swWake = makeSw("wake_writer", "☕", "Wake Writer", "Auto-start nInfer if VRAM was evicted by a render");
+    const swTime = makeSw("time_tied", "⏱", "Time-Tied", "Bridge beat timestamps smoothly across the timeline without pausing momentum");
+    const swKinetic = makeSw("kinetic_grip", "⚡", "Kinetic Flow", "Natural weight transfer, grounded hands & smooth beat transitions (yields at calm Motion)");
+    const swEye = makeSw("eye_scan", "👁", "Eye Scan", "2.5 MP cached reference scan locking likeness & attire without overriding hop pose");
+    const swDouble = makeSw("double_knot", "✧", "Double-Knot", "Pass-2 continuity audit verifying hop joins, domains, positive English & zero semicolons");
+    const swWake = makeSw("wake_writer", "☕", "Auto-Wake", "Auto-start nInfer if VRAM was evicted by a render");
+    swWake.lbl.style.fontSize = "11px";
 
     const writerModeSel = el("select", "h3e-select");
     writerModeSel.style.marginLeft = "auto";
@@ -488,7 +619,7 @@ function createSandTieCore(node, {
         cfgBtn.classList.toggle("h3st-chip-on", open);
         if (open) loadWriterSettings();
     });
-    swRow.append(swTime.lbl, swKinetic.lbl, swEye.lbl, swDouble.lbl, swWake.lbl, writerModeSel, statusPill, startBtn, stopBtn, cfgBtn);
+    swRow.append(swTime.lbl, swKinetic.lbl, swEye.lbl, swDouble.lbl, writerModeSel, statusPill, startBtn, stopBtn, swWake.lbl, cfgBtn);
 
     const writerCfgDrawer = el("div", "h3st-drawer");
     writerCfgDrawer.hidden = true;
@@ -543,7 +674,24 @@ function createSandTieCore(node, {
     cfgModelFileInp.placeholder = "nInfer .ninfer file (or models folder / blank = auto)";
     cfgModelFileInp.title = "Full path to your .ninfer model file (e.g. Ternary-Bonsai-2-27B-ninfer-v3.ninfer), a models folder containing one, or blank to auto-pick from models\\.";
     cfgModelFileInp.style.flex = "1 1 240px";
-    cfgPathRow.append(el("span", "h3st-chips-lbl", "PATHS"), cfgExeInp, cfgModelFileInp);
+    const cfgCtxSel = el("select", "h3e-select");
+    cfgCtxSel.style.maxWidth = "160px";
+    cfgCtxSel.title = "nInfer startup max context & KV reservation (--max-context / --kv-capacity). Lower to 16k-32k on tighter VRAM GPUs so workflow renders have room.";
+    for (const [val, txt] of [
+        [16384, "16k ctx (tight VRAM)"],
+        [24576, "24k ctx"],
+        [32768, "32k ctx (low VRAM)"],
+        [49152, "48k ctx"],
+        [65536, "64k ctx (default)"],
+        [98304, "96k ctx"],
+        [131072, "128k ctx"],
+    ]) {
+        const o = el("option", null, txt);
+        o.value = String(val);
+        cfgCtxSel.appendChild(o);
+    }
+    cfgCtxSel.value = "65536";
+    cfgPathRow.append(el("span", "h3st-chips-lbl", "PATHS"), cfgExeInp, cfgModelFileInp, cfgCtxSel);
     cfgPathRow.hidden = true;
 
     writerCfgDrawer.append(cfgRow, cfgPathRow);
@@ -712,7 +860,7 @@ function createSandTieCore(node, {
                     if (it.aspect_best === "9:16" || it.aspect_best === "16:9") {
                         row.appendChild(el("span", `h3e-msel-tag asp-${it.aspect_best === "9:16" ? "916" : "169"}`, it.aspect_best));
                     }
-                    if (it.duration_best && (key === "explicit" || key === "combat" || key === "camera")) {
+                    if (it.duration_best && (key === "explicit" || key === "combat" || key === "camera" || key === "pose")) {
                         row.appendChild(el("span", "h3e-msel-tag dur-tag", it.duration_best));
                     }
                     chk.addEventListener("change", () => {
@@ -756,8 +904,41 @@ function createSandTieCore(node, {
             pop.hidden = !willOpen;
             wrap.classList.toggle("h3e-msel-open", willOpen);
             if (willOpen) {
+                pop.classList.remove("h3e-msel-right", "h3e-msel-up");
+                pop.style.left = "";
+                pop.style.right = "";
+                pop.style.maxWidth = "";
+                list.style.maxHeight = "";
                 const rect = wrap.getBoundingClientRect();
-                pop.classList.toggle("h3e-msel-right", rect.left > window.innerWidth * 0.52);
+                const container = wrap.closest(".r2-root, .h3e-root, .h3st-modal-box");
+                const cRect = container?.getBoundingClientRect?.();
+                const visLeft = Math.max(cRect ? cRect.left : 0, 0) + 8;
+                const visRight = Math.min(cRect ? cRect.right : window.innerWidth, window.innerWidth) - 8;
+                const visTop = Math.max(cRect ? cRect.top : 0, 0) + 8;
+                const visBottom = Math.min(cRect ? cRect.bottom : window.innerHeight, window.innerHeight) - 8;
+                const scale = (wrap.offsetWidth > 0 && rect.width > 0) ? (rect.width / wrap.offsetWidth) : 1;
+                const availW = Math.max(200, Math.floor((visRight - visLeft) / scale));
+                pop.style.maxWidth = `${Math.min(460, availW)}px`;
+                const popRect = pop.getBoundingClientRect();
+                if (rect.left + popRect.width > visRight) {
+                    if (rect.right - popRect.width >= visLeft) {
+                        pop.classList.add("h3e-msel-right");
+                    } else {
+                        const targetLeft = Math.max(visLeft, visRight - popRect.width);
+                        pop.style.left = `${Math.round((targetLeft - rect.left) / scale)}px`;
+                        pop.style.right = "auto";
+                    }
+                }
+                const spaceBelow = visBottom - rect.bottom;
+                const spaceAbove = rect.top - visTop;
+                if (rect.bottom + popRect.height > visBottom && spaceAbove > spaceBelow) {
+                    pop.classList.add("h3e-msel-up");
+                    if (spaceAbove < popRect.height) {
+                        list.style.maxHeight = `${Math.max(120, Math.floor((spaceAbove - 78) / scale))}px`;
+                    }
+                } else if (spaceBelow < popRect.height) {
+                    list.style.maxHeight = `${Math.max(120, Math.floor((spaceBelow - 78) / scale))}px`;
+                }
                 search.focus();
             }
         });
@@ -790,7 +971,7 @@ function createSandTieCore(node, {
 
     // 5. Toggle Bar for Optics Tray, Scripts Drawer, Clip->Beats Drawer & Quick Chips
     const toolRow = el("div", "h3st-row");
-    const trayToggleBtn = button("▸ + Optics, Grade & Audio", "Toggle secondary optics, color, FX, pose, playbook & audio dials", () => {
+    const trayToggleBtn = button("▸ + Optics, Grade, Dance & Audio", "Toggle optics, color, FX, dance/pose, playbook & audio dials", () => {
         secondaryDrawer.hidden = !secondaryDrawer.hidden;
         updateTrayButton();
     });
@@ -807,14 +988,148 @@ function createSandTieCore(node, {
         scriptsDrawer.hidden = true;
         clipToggleBtn.classList.toggle("h3st-chip-on", open);
         scriptsToggleBtn.classList.remove("h3st-chip-on");
+        if (open) refreshStatus(false);
     });
 
     function updateTrayButton() {
         const secOn = SECONDARY_DIALS.filter(([k]) => parseMultiValue(flavors[k]).length > 0).length;
         const prefix = secondaryDrawer.hidden ? "▸ +" : "▾ Hide";
-        trayToggleBtn.textContent = `${prefix} Optics, Grade & Audio${secOn ? ` (${secOn} on)` : ""}`;
+        trayToggleBtn.textContent = `${prefix} Optics, Grade, Dance & Audio${secOn ? ` (${secOn} on)` : ""}`;
         trayToggleBtn.classList.toggle("h3st-chip-on", !secondaryDrawer.hidden || secOn > 0);
     }
+
+    function perfWeightOf(axis, val) {
+        const rows = PERF_LEVEL_SPEC[axis] || [];
+        const norm = normPerfVal(axis, val);
+        const row = rows.find((r) => r[0] === norm) || rows[2];
+        return row ? Number(row[2]) : 0.0;
+    }
+
+    function findUpstreamSteeringNode() {
+        const g = node?.graph;
+        if (!g || !Array.isArray(g._nodes)) return null;
+        const seen = new Set();
+        const stack = [node];
+        while (stack.length) {
+            const cur = stack.pop();
+            if (!cur || seen.has(cur.id)) continue;
+            seen.add(cur.id);
+            if (cur !== node && cur.type === "HTCSteeringDials") return cur;
+            for (const inp of cur.inputs || []) {
+                if (inp?.link == null) continue;
+                const lk = g.links?.[inp.link];
+                const src = lk ? g.getNodeById?.(lk.origin_id) : null;
+                if (src) stack.push(src);
+            }
+        }
+        return g._nodes.find((n) => n?.type === "HTCSteeringDials") || null;
+    }
+
+    function syncSteeringNode({ announce = false } = {}) {
+        const stNode = findUpstreamSteeringNode();
+        if (!stNode) {
+            if (announce) say("No HTCSteeringDials node found in graph — add one before MODEL to steer embeddings directly.", "hint");
+            return false;
+        }
+        const motW = stNode.widgets?.find((w) => w.name === "motion");
+        const expW = stNode.widgets?.find((w) => w.name === "expression");
+        const enW = stNode.widgets?.find((w) => w.name === "energy");
+        const scW = stNode.widgets?.find((w) => w.name === "scope");
+        const motV = perfWeightOf("motion", flavors.motion) * 0.5;
+        const expV = perfWeightOf("expression", flavors.expression) * 0.5;
+        const enV = perfWeightOf("energy", flavors.energy) * 0.5;
+        for (const [w, val] of [[motW, motV], [expW, expV], [enW, enV], [scW, flavors.steering_scope]]) {
+            if (!w || val === undefined) continue;
+            w.value = val;
+            try { w.callback?.(val, stNode.graph?.canvas, stNode); } catch (_) {}
+        }
+        stNode.graph?.setDirtyCanvas?.(true, true);
+        if (announce) say(`Synced Motion=${motV >= 0 ? "+" : ""}${motV.toFixed(2)}, Expr=${expV >= 0 ? "+" : ""}${expV.toFixed(2)}, Energy=${enV >= 0 ? "+" : ""}${enV.toFixed(2)} onto HTCSteeringDials.`, "hint");
+        return true;
+    }
+
+    const perfStepWidgets = {};
+    const perfBox = el("div", "h3st-perf-box");
+    const perfHead = el("div", "h3st-head");
+    const perfTitle = el("span", "h3st-chips-lbl", "PERFORMANCE & STEERING DIALS");
+    perfTitle.style.color = "var(--h3-text)";
+    const bindSteerLbl = el("label", "h3st-sw");
+    bindSteerLbl.title = "When enabled, Option A step dials automatically push scaled steering weights onto any HTCSteeringDials node in the graph";
+    const bindSteerChk = document.createElement("input");
+    bindSteerChk.type = "checkbox";
+    bindSteerChk.checked = Boolean(flavors.steering_bind);
+    bindSteerChk.addEventListener("change", () => {
+        flavors.steering_bind = bindSteerChk.checked;
+        persistFlavors();
+        if (flavors.steering_bind) syncSteeringNode({ announce: true });
+    });
+    bindSteerLbl.append(bindSteerChk, el("span", null, "🎛 Auto-Sync Model Dials"));
+    const syncSteerBtn = button("Sync → Steering Node", "Push current Motion / Energy / Expr levels onto an upstream HTCSteeringDials node", () => syncSteeringNode({ announce: true }), "h3e-btn");
+    syncSteerBtn.style.padding = "2px 7px";
+    syncSteerBtn.style.fontSize = "10.5px";
+    const perfHeadR = el("div", "h3st-row");
+    perfHeadR.append(bindSteerLbl, syncSteerBtn);
+    perfHead.append(perfTitle, perfHeadR);
+
+    const perfGrid = el("div", "h3st-perf-grid");
+    const exprReadSel = el("select", "h3e-select");
+    exprReadSel.title = "Facial acting flavor / read";
+    exprReadSel.style.fontSize = "10.5px";
+    exprReadSel.style.padding = "2px 5px";
+    for (const [fid, flbl] of [
+        ["auto", "Read: Auto"],
+        ["stoic", "Read: Stoic / Cold"],
+        ["warm", "Read: Warm / Sincere"],
+        ["sly", "Read: Sly / Playful"],
+        ["tense", "Read: Tense / Dread"],
+        ["intense", "Read: Fierce / Intense"],
+        ["sensual", "Read: Sensual / Intimate"],
+    ]) {
+        const o = el("option", null, flbl);
+        o.value = fid;
+        exprReadSel.appendChild(o);
+    }
+    exprReadSel.value = String(flavors.expr_read || "auto");
+    exprReadSel.addEventListener("change", () => {
+        flavors.expr_read = exprReadSel.value;
+        persistFlavors();
+    });
+
+    function buildPerfCard(axis, title, withFlavorSel = false) {
+        const card = el("div", "h3st-pcard");
+        const top = el("div", "h3st-pcard-top");
+        const tit = el("span", "h3st-ptit", title);
+        const valSpan = el("span", "h3st-pval", "");
+        top.append(tit, valSpan);
+
+        const stepsRow = el("div", "h3st-psteps");
+        const btns = [];
+        for (const [id, lbl, wt, tip] of PERF_LEVEL_SPEC[axis]) {
+            const b = button(lbl, `${title}: ${lbl} (${wt >= 0 ? "+" : ""}${wt}) — ${tip}`, () => {
+                flavors[axis] = id;
+                persistFlavors();
+                syncPerfCards();
+                if (flavors.steering_bind) syncSteeringNode();
+            }, "h3e-btn h3st-pbtn");
+            b.dataset.val = id;
+            btns.push(b);
+            stepsRow.appendChild(b);
+        }
+        const desc = el("div", "h3st-pdesc", "");
+        card.append(top, stepsRow);
+        if (withFlavorSel) card.appendChild(exprReadSel);
+        else card.appendChild(desc);
+
+        perfStepWidgets[axis] = { card, valSpan, btns, desc };
+        return card;
+    }
+
+    perfGrid.append(
+        buildPerfCard("motion", "MOTION"),
+        buildPerfCard("energy", "ENERGY"),
+        buildPerfCard("expression", "EXPRESSION", true),
+        buildPerfCard("life", "LIFE"),
+    );
 
     const chipWidgets = {};
     function buildChipGroup(key, title, choices) {
@@ -826,6 +1141,7 @@ function createSandTieCore(node, {
                 flavors[key] = val;
                 persistFlavors();
                 syncChips();
+                if (key === "steering_scope" && flavors.steering_bind) syncSteeringNode();
             }, "h3e-btn");
             b.style.padding = "2px 6px";
             b.style.fontSize = "10.5px";
@@ -844,15 +1160,46 @@ function createSandTieCore(node, {
         }
     }
 
+    function syncPerfCards() {
+        normalizePerfFlavors(flavors);
+        bindSteerChk.checked = Boolean(flavors.steering_bind);
+        exprReadSel.value = String(flavors.expr_read || "auto");
+        for (const [ax, ui] of Object.entries(perfStepWidgets)) {
+            const cur = normPerfVal(ax, flavors[ax]);
+            const rows = PERF_LEVEL_SPEC[ax];
+            const found = rows.find((r) => r[0] === cur) || rows[2];
+            const wt = found[2];
+            ui.valSpan.textContent = `${found[1]} (${wt > 0 ? "+" : ""}${wt})`;
+            ui.desc.textContent = found[3];
+            ui.card.classList.toggle("is-non-zero", wt !== 0);
+            for (const b of ui.btns) b.classList.toggle("h3st-chip-on", b.dataset.val === cur);
+        }
+    }
+
     const talkGrp = buildChipGroup("talk_mode", "TALK", [["auto", "Auto"], ["talk_all", "All"], ["quotes_only", "Quotes"], ["silent", "Silent"]]);
-    const energyGrp = buildChipGroup("energy", "ENERGY", [["small", "S"], ["medium", "M"], ["large", "L"]]);
-    const exprGrp = buildChipGroup("expression", "EXPR", [["small", "S"], ["medium", "M"], ["large", "L"]]);
     const povGrp = buildChipGroup("pov", "POV", [["off", "Off"], ["male", "M"], ["female", "F"]]);
+    const scopeGrp = buildChipGroup("steering_scope", "STEERING", [["blocks_0_24 (voice safe)", "Blocks 0–24 (Voice Safe)"], ["all_blocks", "All 50"]]);
+    const linkPrevLbl = el("label", "h3st-sw");
+    linkPrevLbl.title = "Chain continuity from the active Script tab's previous hop into [Shot 1] (off by default so Quick Tie / Write stay isolated from old chains)";
+    const linkPrevChk = document.createElement("input");
+    linkPrevChk.type = "checkbox";
+    linkPrevChk.checked = Boolean(flavors.link_prev_hop);
+    linkPrevChk.addEventListener("change", () => {
+        flavors.link_prev_hop = linkPrevChk.checked;
+        persistFlavors();
+    });
+    linkPrevLbl.append(linkPrevChk, el("span", null, "⛓ Link Prev Hop"));
+    syncPerfCards();
     syncChips();
+
+    const auxRow = el("div", "h3st-aux-row");
+    auxRow.append(talkGrp, povGrp, scopeGrp);
+    if (!standalone) auxRow.appendChild(linkPrevLbl);
+    perfBox.append(perfHead, perfGrid, auxRow);
 
     const spacerTool = el("span");
     spacerTool.style.flex = "1 1 auto";
-    toolRow.append(trayToggleBtn, scriptsToggleBtn, clipToggleBtn, spacerTool, talkGrp, energyGrp, exprGrp, povGrp);
+    toolRow.append(trayToggleBtn, scriptsToggleBtn, clipToggleBtn, spacerTool);
 
     // 6. Scripts Drawer & Clip->Beats Drawer
     const scriptsDrawer = el("div", "h3st-drawer");
@@ -867,9 +1214,19 @@ function createSandTieCore(node, {
 
     const clipDrawer = el("div", "h3st-drawer");
     clipDrawer.hidden = true;
+    const vidDropBox = el("div", "h3st-vdrop");
+    vidDropBox.title = "Drop a video file (.mp4/.mov/.webm/.mkv) here or click to upload into input/h3_refs/";
+    const vidUpInp = document.createElement("input");
+    vidUpInp.type = "file";
+    vidUpInp.accept = "video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v";
+    vidUpInp.hidden = true;
+    const vidPickSel = el("select", "h3e-select");
+    vidPickSel.style.maxWidth = "210px";
+    vidPickSel.title = "Pick an existing video in input/h3_refs/ or input/";
+    const vidUpBtn = button("+ Upload Video", "Upload a reference video into input/h3_refs/ for Video → Beats extraction", () => vidUpInp.click());
     const vidInput = el("input", "h3e-writer-brief");
     vidInput.type = "text";
-    vidInput.placeholder = "video filename in input/ or h3_refs/…";
+    vidInput.placeholder = "drop video, pick from list, or type filename in input/ or h3_refs/…";
     const inSecInp = el("input", "h3e-writer-brief");
     inSecInp.type = "number";
     inSecInp.style.maxWidth = "68px";
@@ -881,7 +1238,7 @@ function createSandTieCore(node, {
     const extractBtn = button("Extract Beats", "Run 30-FPS OpenCV optical flow + jump-cut storyboard extractor", runVideoExtractor, "h3e-btn h3e-btn-accent");
     const extractedBadge = el("span", "h3st-pill", "No clip extracted");
     const clRow = el("div", "h3st-row");
-    clRow.append(el("strong", null, "▶ Video → Beats:"), vidInput, inSecInp, outSecInp, extractBtn, extractedBadge);
+    clRow.append(el("strong", null, "▶ Video → Beats:"), vidDropBox, vidPickSel, vidUpBtn, vidUpInp, vidInput, inSecInp, outSecInp, extractBtn, extractedBadge);
     clipDrawer.appendChild(clRow);
 
     let extractedVideoData = null;
@@ -891,6 +1248,157 @@ function createSandTieCore(node, {
     let bibleFilter = "all";
     let bibleQuery = "";
     let refBankItems = [];
+    let refBankAudioFiles = [];
+    let refBankVideoFiles = [];
+    function notifyMediaPickerRefresh() {
+        try {
+            import("./media_picker.js").then((m) => m?.refresh?.()).catch(() => {});
+        } catch (_) {}
+    }
+
+    function renderVidDropPreview(busyMsg = "") {
+        vidDropBox.textContent = "";
+        const vname = String(vidInput.value || "").trim();
+        if (busyMsg) {
+            vidDropBox.appendChild(el("span", "h3st-vdrop-hint", busyMsg));
+            return;
+        }
+        if (!vname) {
+            vidDropBox.appendChild(el("span", "h3st-vdrop-hint", "Drop video\nor click"));
+            return;
+        }
+        const cleanBase = vname.replaceAll("\\", "/").split("/").pop();
+        const vidEl = document.createElement("video");
+        vidEl.src = `/view?filename=${encodeURIComponent(cleanBase)}&subfolder=h3_refs&type=input`;
+        vidEl.muted = true;
+        vidEl.loop = true;
+        vidEl.playsInline = true;
+        vidEl.preload = "metadata";
+        vidEl.addEventListener("loadedmetadata", () => {
+            try { vidEl.currentTime = 0.1; } catch (_) {}
+        }, { once: true });
+        vidEl.addEventListener("error", () => {
+            // Try top-level input/ if not inside h3_refs/
+            if (!vidEl.dataset.triedRoot) {
+                vidEl.dataset.triedRoot = "1";
+                vidEl.src = `/view?filename=${encodeURIComponent(cleanBase)}&type=input`;
+                return;
+            }
+            vidEl.remove();
+            vidDropBox.appendChild(el("span", "h3st-vdrop-hint", `▶ ${cleanBase.slice(0, 14)}`));
+        });
+        vidDropBox.appendChild(vidEl);
+    }
+
+    function fillVideoSelect(selectedName = "") {
+        const chosen = String(selectedName || vidInput.value || "").trim();
+        vidPickSel.textContent = "";
+        const noneV = el("option", null, refBankVideoFiles.length ? "— Pick video —" : "— Drop or + Upload —");
+        noneV.value = "";
+        vidPickSel.appendChild(noneV);
+        const seenV = new Set();
+        for (const vfn of refBankVideoFiles) {
+            if (!vfn || seenV.has(vfn)) continue;
+            seenV.add(vfn);
+            const o = el("option", null, `▶ ${vfn}`);
+            o.value = vfn;
+            vidPickSel.appendChild(o);
+        }
+        if (chosen && !seenV.has(chosen)) {
+            const o = el("option", null, `▶ ${chosen}`);
+            o.value = chosen;
+            vidPickSel.appendChild(o);
+        }
+        vidPickSel.value = chosen;
+        renderVidDropPreview();
+    }
+
+    async function uploadVideoClip(file) {
+        if (!file) return;
+        const ext = String(file.name || "").split(".").pop().toLowerCase();
+        if (!["mp4", "mov", "webm", "mkv", "avi", "m4v"].includes(ext)) {
+            return say(`${file.name} is not a supported video file (.mp4, .mov, .webm, .mkv, .avi, .m4v).`, "error");
+        }
+        const mb = (file.size / (1024 * 1024)).toFixed(1);
+        say(`Uploading ${file.name} (${mb} MB) to input/h3_refs/…`, "hint");
+        renderVidDropPreview("Uploading…");
+        vidUpBtn.disabled = true;
+        try {
+            const fd = new FormData();
+            fd.append("files", file, file.name);
+            const upR = await fetch(UPLOAD_URL, { method: "POST", body: fd });
+            const upJ = await upR.json().catch(() => ({}));
+            const savedVid = upJ?.files?.[0]?.name;
+            if (!upR.ok || !upJ?.ok || !savedVid) {
+                throw new Error(upJ?.error || upJ?.skipped?.[0] || `Video upload failed (HTTP ${upR.status}).`);
+            }
+            if (!refBankVideoFiles.includes(savedVid)) {
+                refBankVideoFiles = [savedVid, ...refBankVideoFiles];
+            }
+            vidInput.value = savedVid;
+            fillVideoSelect(savedVid);
+            extractedBadge.textContent = `Ready: ${savedVid}`;
+            extractedBadge.className = "h3st-pill";
+            notifyMediaPickerRefresh();
+            say(`Uploaded ${savedVid} — click Extract Beats when ready.`, "hint");
+        } catch (err) {
+            renderVidDropPreview();
+            say(String(err?.message || err), "error");
+        } finally {
+            vidUpBtn.disabled = false;
+        }
+    }
+
+    vidDropBox.addEventListener("click", () => vidUpInp.click());
+    vidDropBox.addEventListener("mouseenter", () => {
+        const vEl = vidDropBox.querySelector("video");
+        vEl?.play?.()?.catch?.(() => {});
+    });
+    vidDropBox.addEventListener("mouseleave", () => {
+        const vEl = vidDropBox.querySelector("video");
+        try { vEl?.pause?.(); } catch (_) {}
+    });
+    vidUpInp.addEventListener("change", async () => {
+        const pickedVid = vidUpInp.files?.[0];
+        vidUpInp.value = "";
+        if (pickedVid) await uploadVideoClip(pickedVid);
+    });
+    vidPickSel.addEventListener("change", () => {
+        vidInput.value = vidPickSel.value;
+        renderVidDropPreview();
+        if (vidPickSel.value) {
+            extractedBadge.textContent = `Ready: ${vidPickSel.value}`;
+            extractedBadge.className = "h3st-pill";
+        }
+    });
+    vidInput.addEventListener("input", () => {
+        const typedV = vidInput.value.trim();
+        vidPickSel.value = refBankVideoFiles.includes(typedV) ? typedV : "";
+        renderVidDropPreview();
+    });
+    for (const dropTarget of [clipDrawer, vidDropBox]) {
+        dropTarget.addEventListener("dragover", (e) => {
+            if (!e.dataTransfer?.types?.includes("Files")) return;
+            e.preventDefault();
+            e.stopPropagation();
+            clipDrawer.classList.add("is-dragover");
+            vidDropBox.classList.add("is-dragover");
+        });
+        dropTarget.addEventListener("dragleave", (e) => {
+            if (dropTarget === clipDrawer && clipDrawer.contains(e.relatedTarget)) return;
+            clipDrawer.classList.remove("is-dragover");
+            vidDropBox.classList.remove("is-dragover");
+        });
+        dropTarget.addEventListener("drop", async (e) => {
+            if (!e.dataTransfer?.files?.length) return;
+            e.preventDefault();
+            e.stopPropagation();
+            clipDrawer.classList.remove("is-dragover");
+            vidDropBox.classList.remove("is-dragover");
+            await uploadVideoClip(e.dataTransfer.files[0]);
+        });
+    }
+    fillVideoSelect("");
 
     const bibleBox = el("div", "h3st-bible");
     const bibleHead = el("div", "h3st-head");
@@ -903,8 +1411,9 @@ function createSandTieCore(node, {
     bibleLeft.append(bibleToggleBtn, bibleWiredPills);
 
     const bibleRight = el("div", "h3st-row");
+    const syncRefModsBtn = button("↻ RefMods", "Sync & import all RefMods from models/refmods/ (and RefLoRAs) into Reference Bible", syncRefModsToBible);
     const castAllBtn = button("Cast Filtered → S1..S9", "Assign filtered Reference Bible cast onto Subject 1..N", castFilteredToRail);
-    const saveRailBtn = button("Save Rail → Bible", "Import current rail subjects/plates into your persistent Reference Bible", importRailToBible);
+    const saveRailBtn = button("Save Rail → Bible", "Import current rail subjects/plates/RefMods into your persistent Reference Bible", importRailToBible);
     const uploadInp = document.createElement("input");
     uploadInp.type = "file";
     uploadInp.accept = "image/*";
@@ -916,7 +1425,7 @@ function createSandTieCore(node, {
         await uploadAndScanFile(f);
     });
     const uploadBtn = button("+ Upload & Eye Scan", "Upload an image to h3_refs, run 2.5 MP Eye Scan, and save to Reference Bible", () => uploadInp.click());
-    bibleRight.append(castAllBtn, saveRailBtn, uploadBtn, uploadInp);
+    bibleRight.append(syncRefModsBtn, castAllBtn, saveRailBtn, uploadBtn, uploadInp);
     bibleHead.append(bibleLeft, bibleRight);
 
     const bibleBody = el("div", "h3st-shell");
@@ -924,7 +1433,7 @@ function createSandTieCore(node, {
     const bibleSearchInp = el("input", "h3e-writer-brief");
     bibleSearchInp.type = "text";
     bibleSearchInp.style.flex = "1 1 160px";
-    bibleSearchInp.placeholder = "Search Reference Bible (name, @tag, ethnicity, outfit)…";
+    bibleSearchInp.placeholder = "Search Reference Bible (name, @tag, refmod, ethnicity, outfit)…";
     bibleSearchInp.addEventListener("input", () => {
         bibleQuery = bibleSearchInp.value;
         renderBibleCardsOnly();
@@ -935,7 +1444,7 @@ function createSandTieCore(node, {
     });
 
     const bfBtns = {};
-    for (const [fk, fl] of [["all", "All"], ["subject", "Cast"], ["place", "Plates"], ["prop", "Props"]]) {
+    for (const [fk, fl] of [["all", "All"], ["subject", "Cast"], ["place", "Plates"], ["prop", "Props"], ["refmod", "⬡ RefMods"]]) {
         const b = button(fl, `Show ${fl}`, () => {
             bibleFilter = fk;
             renderReferenceBible();
@@ -963,10 +1472,31 @@ function createSandTieCore(node, {
         setRefPlan(JSON.stringify({ refs: doc.refs || [], subjects: doc.subjects || {} }));
     }
 
+    function sameRefItem(r, item) {
+        const rSrc = String(r?.source || "image").toLowerCase();
+        const iSrc = String(item?.source || "image").toLowerCase();
+        return rSrc === iSrc && String(r?.file || "").toLowerCase() === String(item?.file || "").toLowerCase();
+    }
+
+    function refmodRailFields(item) {
+        if (String(item?.source || "image") !== "refmod") return {};
+        const out = { source: "refmod" };
+        if (item.strength != null && Number(item.strength) !== 1) {
+            out.strength = Number(item.strength);
+        }
+        if (item.step_curve && item.step_curve !== "full") {
+            out.step_curve = item.step_curve;
+        }
+        if (Array.isArray(item.members) && item.members.length) {
+            out.members = item.members.slice();
+        }
+        return out;
+    }
+
     function assignBibleItemToSlot(item, roleTarget) {
         const doc = readRefPlanObj();
-        const wasSame = doc.refs.some((r) => String(r.file || "") === String(item.file || "") && (r.subject ? `S${r.subject}` : (r.retention === "prop" ? "Prop" : "Plate")) === roleTarget);
-        const refs = doc.refs.filter((r) => String(r.file || "") !== String(item.file || ""));
+        const wasSame = doc.refs.some((r) => sameRefItem(r, item) && (r.subject ? `S${r.subject}` : (r.retention === "prop" ? "Prop" : "Plate")) === roleTarget);
+        const refs = doc.refs.filter((r) => !sameRefItem(r, item));
         const subjects = Object.assign({}, doc.subjects);
 
         // Clean up unused subject metadata for subjects no longer present on kept refs
@@ -998,6 +1528,7 @@ function createSandTieCore(node, {
             refs.push({
                 slot, tag: item.tag || "plate", file: item.file,
                 subject: null, retention: roleTarget === "Prop" ? "prop" : "reference", desc: item.desc || "",
+                ...refmodRailFields(item),
             });
         } else {
             const sn = Math.max(1, Math.min(9, Number(String(roleTarget).replace(/\D+/g, "")) || nextOpenSubjectSlot(refs)));
@@ -1012,6 +1543,7 @@ function createSandTieCore(node, {
                 slot, tag: item.tag || `subject${sn}`, file: item.file,
                 subject: sn, retention: "fully_preserved", desc: item.desc || "",
                 voice: item.voice || "",
+                ...refmodRailFields(item),
             });
             subjects[sn] = {
                 name: item.char_name || item.name || "",
@@ -1041,12 +1573,21 @@ function createSandTieCore(node, {
     }
 
     function castFilteredToRail() {
-        const cast = refBankItems.filter((it) => it.role === "subject" && (!bibleQuery || `${it.name} ${it.tag} ${it.desc}`.toLowerCase().includes(bibleQuery.toLowerCase())));
+        const cast = refBankItems.filter((it) => {
+            if (bibleFilter === "refmod" && it.source !== "refmod") return false;
+            if (it.role !== "subject") return false;
+            if (!bibleQuery) return true;
+            return `${it.name} ${it.tag} ${it.file} ${it.desc}`.toLowerCase().includes(bibleQuery.toLowerCase());
+        });
         if (!cast.length) return;
         const doc = { refs: [], subjects: {} };
         cast.slice(0, 9).forEach((it, idx) => {
             const sn = idx + 1;
-            doc.refs.push({ slot: sn, tag: it.tag || `subject${sn}`, file: it.file, subject: sn, retention: "fully_preserved", desc: it.desc || "", voice: it.voice || "" });
+            doc.refs.push({
+                slot: sn, tag: it.tag || `subject${sn}`, file: it.file,
+                subject: sn, retention: "fully_preserved", desc: it.desc || "", voice: it.voice || "",
+                ...refmodRailFields(it),
+            });
             doc.subjects[sn] = { name: it.char_name || it.name || "", locked: it.locked || "", context: it.context || "" };
         });
         writeRefPlanObj(doc);
@@ -1059,34 +1600,53 @@ function createSandTieCore(node, {
     function renderBibleCardsOnly() {
         const doc = readRefPlanObj();
         const nextSub = nextOpenSubjectSlot(doc.refs);
-        const byFileSlot = new Map();
+        const byKeySlot = new Map();
         for (const r of doc.refs) {
             if (!r.file) continue;
-            byFileSlot.set(String(r.file), r.subject ? `S${r.subject}` : (r.retention === "prop" ? "Prop" : "Plate"));
+            const k = `${String(r.source || "image").toLowerCase()}:${String(r.file).toLowerCase()}`;
+            byKeySlot.set(k, r.subject ? `S${r.subject}` : (r.retention === "prop" ? "Prop" : "Plate"));
         }
         const q = bibleQuery.trim().toLowerCase();
         const visible = refBankItems.filter((it) => {
-            if (bibleFilter !== "all" && it.role !== bibleFilter) return false;
+            if (bibleFilter === "refmod") {
+                if (it.source !== "refmod") return false;
+            } else if (bibleFilter !== "all" && it.role !== bibleFilter) {
+                return false;
+            }
             if (!q) return true;
-            return `${it.name} ${it.tag} ${it.desc} ${it.voice}`.toLowerCase().includes(q);
+            return `${it.name} ${it.tag} ${it.file} ${it.source || ""} ${it.refmod_role || ""} ${it.desc} ${it.voice}`.toLowerCase().includes(q);
         });
 
         bibleGrid.textContent = "";
         if (!visible.length) {
-            const emptyMsg = el("div", "h3e-note", refBankItems.length ? "No Reference Bible items match this filter." : "No saved Reference Bible entries yet — click + Upload & Eye Scan or Save Rail → Bible.");
+            const emptyMsg = el("div", "h3e-note", refBankItems.length ? "No Reference Bible items match this filter." : "No saved Reference Bible entries yet — click + Upload & Eye Scan, ↻ RefMods, or Save Rail → Bible.");
             bibleGrid.appendChild(emptyMsg);
             return;
         }
         const frag = document.createDocumentFragment();
-        for (const it of visible.slice(0, 60)) {
-            const activeSlot = byFileSlot.get(it.file) || "";
+        for (const it of visible.slice(0, 80)) {
+            const isMod = it.source === "refmod";
+            const itemKey = `${isMod ? "refmod" : "image"}:${String(it.file || "").toLowerCase()}`;
+            const activeSlot = byKeySlot.get(itemKey) || "";
             const card = el("div", "h3st-bcard" + (activeSlot ? " h3st-bwired" : ""));
             const top = el("div", "h3st-btop");
-            const img = document.createElement("img");
-            img.className = "h3st-bthumb";
-            img.loading = "lazy";
-            img.alt = it.name || it.tag;
-            img.src = `${SANDTIE_THUMB_URL}?file=${encodeURIComponent(it.file)}&w=128&v=${it.mtime || 1}`;
+            const thumbUrl = `${SANDTIE_THUMB_URL}?file=${encodeURIComponent(it.file)}&source=${isMod ? "refmod" : "image"}&w=128&v=${it.mtime || 1}`;
+            if (isMod && it.refmod_has_looks === false) {
+                top.appendChild(el("div", "h3st-bthumb", "⬡"));
+            } else {
+                const img = document.createElement("img");
+                img.className = "h3st-bthumb";
+                img.loading = "lazy";
+                img.alt = it.name || it.tag;
+                img.src = thumbUrl;
+                if (isMod) {
+                    img.addEventListener("error", () => {
+                        const ph = el("div", "h3st-bthumb", "⬡");
+                        img.replaceWith(ph);
+                    });
+                }
+                top.appendChild(img);
+            }
             const meta = el("div");
             meta.style.minWidth = "0";
             meta.style.flex = "1 1 auto";
@@ -1100,14 +1660,26 @@ function createSandTieCore(node, {
             tagSp.style.color = "var(--h3-muted)";
             tagSp.style.fontWeight = "400";
             nm.appendChild(tagSp);
-            const subMeta = el("div", null, `${it.role}${it.voice ? " · ♪ " + it.voice : ""}`);
+            const metaBits = [it.role];
+            if (isMod) {
+                metaBits.push(`⬡ ${it.refmod_format || "refmod"}${it.refmod_tokens ? " · " + it.refmod_tokens + "t" : ""}`);
+                if (it.strength != null && Number(it.strength) !== 1) metaBits.push(`×${Number(it.strength)}`);
+                if (it.step_curve && it.step_curve !== "full") metaBits.push(it.step_curve);
+            }
+            if (it.voice) metaBits.push("♪ " + it.voice);
+            const subMeta = el("div", null, metaBits.join(" · "));
             subMeta.style.fontSize = "10px";
             subMeta.style.color = "var(--h3-muted)";
             meta.append(nm, subMeta);
-            top.append(img, meta);
+            top.appendChild(meta);
+            if (isMod) {
+                const rmPill = el("span", "h3st-pill", "⬡");
+                rmPill.title = `RefMod (${it.file})`;
+                top.appendChild(rmPill);
+            }
             if (activeSlot) top.appendChild(el("span", "h3st-pill h3st-pill-accent", activeSlot));
 
-            const desc = el("div", "h3st-bdesc", it.desc || "Pending Eye Scan…");
+            const desc = el("div", "h3st-bdesc", it.desc || (isMod ? `RefMod: ${it.file}` : "Pending Eye Scan…"));
             const acts = el("div", "h3st-row");
             if (it.role === "subject") {
                 if (activeSlot && activeSlot.startsWith("S")) {
@@ -1182,38 +1754,179 @@ function createSandTieCore(node, {
                     roleSel.appendChild(o);
                 }
                 roleSel.value = it.role || "subject";
+                const curVoice = String(it.voice || "").trim();
+                const voiceSel = el("select", "h3e-select");
+                voiceSel.style.flex = "1 1 150px";
+                voiceSel.title = "Pick an audio clip (.mp3/.wav/.flac/.ogg/.m4a) from input/h3_refs/";
                 const voiceInp = el("input", "h3e-writer-brief");
                 voiceInp.type = "text";
-                voiceInp.value = it.voice || "";
-                voiceInp.placeholder = "voice file (e.g. mara.wav)";
+                voiceInp.style.flex = "1 1 120px";
+                voiceInp.value = curVoice;
+                voiceInp.placeholder = "or type voice filename";
+                const audioPrev = document.createElement("audio");
+                audioPrev.controls = true;
+                audioPrev.style.height = "26px";
+                audioPrev.style.maxWidth = "210px";
+                const syncAudioPrev = (vname) => {
+                    const clean = String(vname || "").trim();
+                    if (clean) {
+                        audioPrev.hidden = false;
+                        audioPrev.src = `/view?filename=${encodeURIComponent(clean)}&subfolder=h3_refs&type=input`;
+                    } else {
+                        audioPrev.hidden = true;
+                        audioPrev.removeAttribute("src");
+                    }
+                };
+                const fillVoiceSelect = (selectedName) => {
+                    const chosen = String(selectedName || "").trim();
+                    voiceSel.textContent = "";
+                    const noneOpt = el("option", null, "— No voice —");
+                    noneOpt.value = "";
+                    voiceSel.appendChild(noneOpt);
+                    const seen = new Set();
+                    for (const fn of refBankAudioFiles) {
+                        if (!fn || seen.has(fn)) continue;
+                        seen.add(fn);
+                        const o = el("option", null, `♪ ${fn}`);
+                        o.value = fn;
+                        voiceSel.appendChild(o);
+                    }
+                    if (chosen && !seen.has(chosen)) {
+                        const o = el("option", null, `♪ ${chosen}`);
+                        o.value = chosen;
+                        voiceSel.appendChild(o);
+                    }
+                    voiceSel.value = chosen;
+                    syncAudioPrev(chosen);
+                };
+                fillVoiceSelect(curVoice);
+                voiceSel.addEventListener("change", () => {
+                    voiceInp.value = voiceSel.value;
+                    syncAudioPrev(voiceSel.value);
+                });
+                voiceInp.addEventListener("input", () => {
+                    const typed = voiceInp.value.trim();
+                    if (refBankAudioFiles.includes(typed) || !typed) {
+                        voiceSel.value = typed;
+                    }
+                    syncAudioPrev(typed);
+                });
+
+                const voiceUpInp = document.createElement("input");
+                voiceUpInp.type = "file";
+                voiceUpInp.accept = "audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac";
+                voiceUpInp.hidden = true;
+                voiceUpInp.addEventListener("change", async () => {
+                    const vf = voiceUpInp.files?.[0];
+                    voiceUpInp.value = "";
+                    if (!vf) return;
+                    try {
+                        say(`Uploading voice ${vf.name}…`, "hint");
+                        const fd = new FormData();
+                        fd.append("files", vf, vf.name);
+                        const upR = await fetch(UPLOAD_URL, { method: "POST", body: fd });
+                        const upJ = await upR.json();
+                        const savedAudio = upJ?.files?.[0]?.name;
+                        if (!upR.ok || !upJ?.ok || !savedAudio) {
+                            return say(upJ?.error || "Audio upload failed.", "error");
+                        }
+                        if (!refBankAudioFiles.includes(savedAudio)) {
+                            refBankAudioFiles = [savedAudio, ...refBankAudioFiles];
+                        }
+                        voiceInp.value = savedAudio;
+                        fillVoiceSelect(savedAudio);
+                        notifyMediaPickerRefresh();
+                        say(`Uploaded ${savedAudio} — click Save to store on card.`, "hint");
+                    } catch (err) {
+                        say(String(err), "error");
+                    }
+                });
+                const voiceUpBtn = button("+ Audio", "Upload an .mp3 / .wav / .flac voice reference into h3_refs/", () => voiceUpInp.click());
+
                 const descInp = el("textarea", "h3e-json");
                 descInp.rows = 2;
                 descInp.value = it.desc || "";
-                const saveCardBtn = button("Save", "Save changes to Reference Bible", async () => {
+
+                let strInp = null;
+                let curveSel = null;
+                if (isMod) {
+                    strInp = el("input", "h3e-writer-brief");
+                    strInp.type = "number";
+                    strInp.min = "0";
+                    strInp.max = "3";
+                    strInp.step = "0.05";
+                    strInp.style.maxWidth = "68px";
+                    strInp.title = "RefMod strength (default 1.0)";
+                    strInp.value = String(it.strength ?? 1.0);
+                    curveSel = el("select", "h3e-select");
+                    curveSel.style.maxWidth = "115px";
+                    curveSel.title = "RefMod per-step denoising curve";
+                    for (const sc of ["full", "early_lock", "late_detail", "fade", "mid_peak"]) {
+                        const o = el("option", null, sc);
+                        o.value = sc;
+                        curveSel.appendChild(o);
+                    }
+                    curveSel.value = it.step_curve || "full";
+                }
+
+                const saveCardBtn = button("Save", "Save changes to Reference Bible (also updates wired rail rows)", async () => {
+                    const nextName = nmInp.value.trim();
+                    const nextTag = tagInp.value.trim().replace(/^@/, "");
+                    const nextRole = roleSel.value;
+                    const nextVoice = (voiceInp.value.trim() || voiceSel.value || "").trim();
+                    const nextDesc = descInp.value.trim();
+                    const nextStrength = strInp ? (Number(strInp.value) || 1.0) : undefined;
+                    const nextCurve = curveSel ? (curveSel.value || "full") : undefined;
                     const r = await fetch(SANDTIE_REFBANK_URL, {
                         method: "POST", headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             action: "save",
                             item: {
-                                id: it.id, file: it.file, name: nmInp.value.trim(),
-                                char_name: nmInp.value.trim().split(" ")[0],
-                                tag: tagInp.value.trim().replace(/^@/, ""),
-                                role: roleSel.value, voice: voiceInp.value.trim(), desc: descInp.value.trim(),
+                                id: it.id, file: it.file, source: it.source || "image",
+                                name: nextName,
+                                char_name: nextName.split(" ")[0],
+                                tag: nextTag,
+                                role: nextRole, voice: nextVoice, desc: nextDesc,
+                                ...(isMod ? { strength: nextStrength, step_curve: nextCurve } : {}),
                             },
                         }),
                     });
                     const j = await r.json();
                     if (j.ok) {
                         refBankItems = j.items || [];
+                        if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
+                        // Keep any already-wired rail row in sync immediately so the user never has to re-wire or visit Ref Rail.
+                        const doc = readRefPlanObj();
+                        let syncedRail = false;
+                        for (const row of doc.refs) {
+                            if (sameRefItem(row, it)) {
+                                row.voice = nextVoice;
+                                if (nextDesc) row.desc = nextDesc;
+                                if (nextTag) row.tag = nextTag;
+                                if (isMod) {
+                                    row.source = "refmod";
+                                    if (nextStrength !== 1) row.strength = nextStrength;
+                                    else delete row.strength;
+                                    if (nextCurve && nextCurve !== "full") row.step_curve = nextCurve;
+                                    else delete row.step_curve;
+                                }
+                                if (row.subject && doc.subjects?.[row.subject]) {
+                                    doc.subjects[row.subject].name = (nextName.split(" ")[0]) || doc.subjects[row.subject].name || "";
+                                }
+                                syncedRail = true;
+                            }
+                        }
+                        if (syncedRail) writeRefPlanObj(doc);
                         editingCardId = "";
                         renderReferenceBible();
-                        say(`Updated ${nmInp.value.trim() || it.file}.`, "hint");
+                        say(`Updated ${nextName || it.file}${syncedRail ? " (+ synced rail)" : ""}.`, "hint");
                     }
                 }, "h3e-btn h3e-btn-accent");
                 const r1 = el("div", "h3st-row");
                 r1.append(nmInp, tagInp, roleSel);
+                if (strInp && curveSel) r1.append(strInp, curveSel);
                 const r2 = el("div", "h3st-row");
-                r2.append(voiceInp, saveCardBtn);
+                r2.append(voiceSel, voiceUpBtn, voiceUpInp, voiceInp, audioPrev, saveCardBtn);
                 ed.append(r1, descInp, r2);
                 card.appendChild(ed);
             }
@@ -1231,19 +1944,43 @@ function createSandTieCore(node, {
         bibleWiredPills.textContent = "";
         for (const r of doc.refs) {
             if (!r.file) continue;
-            const badgeLbl = r.subject ? `S${r.subject}: @${r.tag} ×` : `${r.retention === "prop" ? "Prop" : "Plate"}: @${r.tag} ×`;
-            const pBtn = button(badgeLbl, `Click to unassign @${r.tag}`, () => assignBibleItemToSlot({ file: r.file }, "__remove__"), "h3st-pill h3st-pill-accent");
+            const modMark = r.source === "refmod" ? "⬡ " : "";
+            const badgeLbl = r.subject ? `${modMark}S${r.subject}: @${r.tag} ×` : `${modMark}${r.retention === "prop" ? "Prop" : "Plate"}: @${r.tag} ×`;
+            const pBtn = button(badgeLbl, `Click to unassign @${r.tag}`, () => assignBibleItemToSlot({ file: r.file, source: r.source || "image" }, "__remove__"), "h3st-pill h3st-pill-accent");
             pBtn.style.cursor = "pointer";
             bibleWiredPills.appendChild(pBtn);
         }
-        const counts = { all: refBankItems.length, subject: 0, place: 0, prop: 0 };
-        for (const it of refBankItems) counts[it.role] = (counts[it.role] || 0) + 1;
+        const counts = { all: refBankItems.length, subject: 0, place: 0, prop: 0, refmod: 0 };
+        for (const it of refBankItems) {
+            counts[it.role] = (counts[it.role] || 0) + 1;
+            if (it.source === "refmod") counts.refmod += 1;
+        }
         for (const [fk, b] of Object.entries(bfBtns)) {
-            const lbl = fk === "all" ? "All" : (fk === "subject" ? "Cast" : (fk === "place" ? "Plates" : "Props"));
+            const lbl = fk === "all" ? "All" : (fk === "subject" ? "Cast" : (fk === "place" ? "Plates" : (fk === "prop" ? "Props" : "⬡ RefMods")));
             b.textContent = `${lbl} (${counts[fk] || 0})`;
             b.classList.toggle("h3st-chip-on", bibleFilter === fk);
         }
         if (bibleOpen) renderBibleCardsOnly();
+    }
+
+    async function syncRefModsToBible() {
+        try {
+            say("Scanning models/refmods/ & RefLoRAs into Reference Bible…", "hint");
+            const r = await fetch(SANDTIE_REFBANK_URL, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "sync_refmods" }),
+            });
+            const j = await r.json();
+            if (!j.ok) return say(j.error || "RefMod sync failed.", "error");
+            refBankItems = j.items || [];
+            if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
+            bibleOpen = true;
+            renderReferenceBible();
+            const nMods = refBankItems.filter((x) => x.source === "refmod").length;
+            say(`Synced ${nMods} RefMod(s) into Reference Bible (${refBankItems.length} total).`, "hint");
+        } catch (err) {
+            say(String(err), "error");
+        }
     }
 
     async function importRailToBible() {
@@ -1254,6 +1991,7 @@ function createSandTieCore(node, {
         const j = await r.json();
         if (j.ok) {
             refBankItems = j.items || [];
+            if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
             renderReferenceBible();
             say(`Saved rail references into Reference Bible (${refBankItems.length} total).`, "hint");
         }
@@ -1263,11 +2001,12 @@ function createSandTieCore(node, {
         say(`Eye-Scanning ${item.file} at 2.5 MP…`, "hint");
         const r = await fetch(SANDTIE_REFBANK_URL, {
             method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "scan", id: item.id, file: item.file, role: item.role, auto_wake: Boolean(flavors.wake_writer) }),
+            body: JSON.stringify({ action: "scan", id: item.id, file: item.file, source: item.source || "image", role: item.role, auto_wake: Boolean(flavors.wake_writer) }),
         });
         const j = await r.json();
         if (!j.ok) return say(j.error || "Eye Scan failed", "error");
         refBankItems = j.items || [];
+        if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
         renderReferenceBible();
         say(`Eye Scan updated ${item.name || item.file}.`, "hint");
     }
@@ -1275,11 +2014,12 @@ function createSandTieCore(node, {
     async function deleteBibleItem(item) {
         const r = await fetch(SANDTIE_REFBANK_URL, {
             method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "delete", id: item.id, file: item.file }),
+            body: JSON.stringify({ action: "delete", id: item.id, file: item.file, source: item.source || "image" }),
         });
         const j = await r.json();
         if (j.ok) {
             refBankItems = j.items || [];
+            if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
             renderReferenceBible();
         }
     }
@@ -1291,6 +2031,7 @@ function createSandTieCore(node, {
         const upJson = await upRes.json();
         const savedName = upJson?.files?.[0]?.name;
         if (!savedName) return say(upJson?.error || "Upload failed", "error");
+        notifyMediaPickerRefresh();
         say(`Uploaded ${savedName} — running 2.5 MP Eye Scan…`, "hint");
         const r = await fetch(SANDTIE_REFBANK_URL, {
             method: "POST", headers: { "Content-Type": "application/json" },
@@ -1299,6 +2040,7 @@ function createSandTieCore(node, {
         const j = await r.json();
         if (j.ok) {
             refBankItems = j.items || [];
+            if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
             bibleOpen = true;
             renderReferenceBible();
             say(`Added ${savedName} to Reference Bible.`, "hint");
@@ -1385,10 +2127,20 @@ function createSandTieCore(node, {
     function applyComboValues(vals) {
         pushUndoSnapshot();
         for (const k of ALL_DIAL_KEYS) flavors[k] = "";
+        flavors.motion = "natural";
+        flavors.energy = "steady";
+        flavors.expression = "natural";
+        flavors.expr_read = "auto";
+        flavors.life = "natural";
         Object.assign(flavors, vals || {});
+        if (vals && !("motion" in vals) && ("energy" in vals)) {
+            flavors.motion = normPerfVal("motion", vals.energy);
+        }
+        normalizePerfFlavors(flavors);
         flavors.dial_modes = Object.assign({}, vals?.dial_modes || {});
         persistFlavors();
         syncAllWidgets();
+        if (flavors.steering_bind) syncSteeringNode();
     }
 
     comboSel.addEventListener("change", () => {
@@ -1408,8 +2160,11 @@ function createSandTieCore(node, {
         const vals = {};
         for (const k of ALL_DIAL_KEYS) if (flavors[k]) vals[k] = flavors[k];
         vals.talk_mode = flavors.talk_mode;
+        vals.motion = flavors.motion;
         vals.energy = flavors.energy;
         vals.expression = flavors.expression;
+        vals.expr_read = flavors.expr_read;
+        vals.life = flavors.life;
         vals.pov = flavors.pov;
         vals.dial_modes = Object.assign({}, flavors.dial_modes || {});
         userList.unshift({ id: `user_${Date.now()}`, label: name.trim(), values: vals });
@@ -1442,6 +2197,12 @@ function createSandTieCore(node, {
         const aspSpec = parseAspectSpec(getAspect());
         const targetAsp = aspSpec.bucket;
         const fitAsp = (it) => targetAsp === "either" || it.aspect_best === "either" || it.aspect_best === targetAsp;
+        const isNsfwOpt = (it) => {
+            const d = String(it?.domain || "").toLowerCase();
+            if (["bedroom", "bdsm_dom", "gloryhole", "wet_shower", "wet_tub"].includes(d)) return true;
+            const blob = `${it?.id || ""} ${it?.label || ""} ${it?.group || ""}`.toLowerCase();
+            return /\b(?:nude|partial|fetish|boudoir|erotic|intimate|climax|filthy|dirty|praise|mommy|domme|submissive|lingerie|afterglow|pillow|gasp|whimper|overstim|sensual|strip\s*club|casting\s*studio|love\s*hotel|multi_position_3cut_intimate)\b/.test(blob);
+        };
         const pickOne = (k, pred = null) => {
             const arr = (dialControllers[k]?.getItems() || []).filter((it) => !it.multi_hop_only && fitAsp(it) && (!pred || pred(it)));
             return arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
@@ -1450,17 +2211,20 @@ function createSandTieCore(node, {
         const themes = ["cinema_drama", "action_combat", "intimate_romance", "dance_performance"];
         const theme = themes[Math.floor(Math.random() * themes.length)];
         for (const k of ALL_DIAL_KEYS) flavors[k] = "";
+        const sfwOk = (it) => !isNsfwOpt(it);
 
         if (theme === "action_combat") {
             const cb = pickOne("combat");
-            const pl = pickOne("place", (x) => x.domain === "combat_action" || x.domain === "general");
-            const wr = pickOne("wardrobe", (x) => x.domain === "combat_action" || x.domain === "general");
+            const pl = pickOne("place", (x) => (x.domain === "combat_action" || x.domain === "general") && sfwOk(x));
+            const wr = pickOne("wardrobe", (x) => (x.domain === "combat_action" || x.domain === "general") && sfwOk(x));
             flavors.combat = cb?.id || "";
             flavors.place = pl?.id || "";
             flavors.wardrobe = wr?.id || "";
-            flavors.fx = pickOne("fx")?.id || "";
-            flavors.style = pickOne("style")?.id || "";
-            flavors.energy = "large";
+            flavors.fx = pickOne("fx", sfwOk)?.id || "";
+            flavors.style = pickOne("style", sfwOk)?.id || "";
+            flavors.motion = "max";
+            flavors.energy = "charged";
+            flavors.expression = "vivid";
         } else if (theme === "intimate_romance") {
             const pl = pickOne("place", (x) => ["bedroom", "sofa_lounge", "mirror_vanity", "wet_shower", "wet_tub", "wet_pool", "office_desk", "car_cabin"].includes(x.domain));
             const domP = pl?.domain || "bedroom";
@@ -1473,24 +2237,35 @@ function createSandTieCore(node, {
             flavors.explicit = ex?.id || "";
             flavors.wardrobe = wr?.id || "";
             flavors.fetish = pb?.id || "";
-            flavors.energy = "medium";
-            flavors.expression = "large";
+            flavors.motion = "natural";
+            flavors.energy = "steady";
+            flavors.expression = "vivid";
+            flavors.expr_read = "sensual";
         } else if (theme === "dance_performance") {
-            flavors.pose = pickOne("pose")?.id || "";
-            flavors.place = pickOne("place", (x) => x.domain === "general" || x.domain === "sofa_lounge")?.id || "";
-            flavors.music = pickOne("music")?.id || "";
-            flavors.style = pickOne("style")?.id || "";
-            flavors.energy = "large";
+            const ps = pickOne("pose", sfwOk);
+            const domPose = ps?.domain || "general";
+            flavors.pose = ps?.id || "";
+            flavors.place = pickOne("place", (x) => domainsMatch(domPose, x.domain) && x.domain !== "combat_action" && sfwOk(x))?.id || "";
+            flavors.wardrobe = pickOne("wardrobe", (x) => sfwOk(x) && x.domain !== "combat_action")?.id || "";
+            flavors.music = pickOne("music", sfwOk)?.id || "";
+            flavors.style = pickOne("style", sfwOk)?.id || "";
+            flavors.motion = "brisk";
+            flavors.energy = "charged";
+            flavors.expression = "vivid";
         } else {
-            flavors.place = pickOne("place", (x) => x.domain === "general" || x.domain === "office_desk" || x.domain === "sofa_lounge")?.id || "";
-            flavors.style = pickOne("style")?.id || "";
-            flavors.talkstyle = pickOne("talkstyle")?.id || "";
-            flavors.energy = "medium";
+            flavors.place = pickOne("place", (x) => (x.domain === "general" || x.domain === "office_desk" || x.domain === "sofa_lounge") && sfwOk(x))?.id || "";
+            flavors.wardrobe = pickOne("wardrobe", (x) => sfwOk(x) && x.domain !== "combat_action")?.id || "";
+            flavors.style = pickOne("style", sfwOk)?.id || "";
+            flavors.talkstyle = pickOne("talkstyle", sfwOk)?.id || "";
+            flavors.motion = "natural";
+            flavors.energy = "steady";
+            flavors.expression = "natural";
+            flavors.expr_read = "auto";
         }
-        flavors.camera = pickOne("camera")?.id || "";
-        flavors.light = pickOne("light")?.id || "";
+        flavors.camera = pickOne("camera", theme === "intimate_romance" ? null : sfwOk)?.id || "";
+        flavors.light = pickOne("light", theme === "intimate_romance" ? null : sfwOk)?.id || "";
         flavors.colour = pickOne("colour")?.id || "";
-        flavors.ambience = pickOne("ambience")?.id || "";
+        flavors.ambience = pickOne("ambience", theme === "intimate_romance" ? null : sfwOk)?.id || "";
         persistFlavors();
         syncAllWidgets();
         say(`Surprise Roll (${theme}, ${aspSpec.label}, domain-locked ✓).`, "hint");
@@ -1657,7 +2432,9 @@ function createSandTieCore(node, {
         swEye.chk.checked = Boolean(flavors.eye_scan);
         swDouble.chk.checked = Boolean(flavors.double_knot);
         swWake.chk.checked = Boolean(flavors.wake_writer);
+        linkPrevChk.checked = Boolean(flavors.link_prev_hop);
         fxTimingSel.value = flavors.fx_timing || "delayed_mid";
+        syncPerfCards();
         syncChips();
         for (const k of ALL_DIAL_KEYS) dialControllers[k]?.setValue(flavors[k] || "");
         renderActiveStrip();
@@ -1694,6 +2471,11 @@ function createSandTieCore(node, {
                     startup_error: j.startup_error || "",
                 };
                 paintServerButtons();
+                if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
+                if (Array.isArray(j.video_files)) {
+                    refBankVideoFiles = j.video_files;
+                    fillVideoSelect(vidInput.value.trim());
+                }
                 if (j.catalog) {
                     _sharedCatalog = j.catalog;
                     populateFromCatalog(_sharedCatalog);
@@ -1766,6 +2548,13 @@ function createSandTieCore(node, {
                 ? `Auto-detected: ${curPaths.found_exe}`
                 : "nInfer exe path (e.g. C:\\ninfer\\ninfer-serve.exe)";
             cfgModelFileInp.value = curPaths.model_file || "";
+            const ctxVal = String(curPaths.ctx_size || j.ctx_size || 65536);
+            if (!Array.from(cfgCtxSel.options || cfgCtxSel.children || []).some((o) => o.value === ctxVal)) {
+                const co = el("option", null, `${ctxVal} ctx (custom)`);
+                co.value = ctxVal;
+                cfgCtxSel.appendChild(co);
+            }
+            cfgCtxSel.value = ctxVal;
             cfgModelPick.textContent = "";
             const ph = el("option", null, (j.models || []).length ? "— Pick loaded model —" : "— No models listed —");
             ph.value = "";
@@ -1790,10 +2579,13 @@ function createSandTieCore(node, {
                 unload_on_run: cfgUnloadChk.checked,
             };
             if (activeBack === "ninfer" || !cfgPathRow.hidden) {
+                const ctxNum = Number(cfgCtxSel.value) || 65536;
+                patch.ctx_size = ctxNum;
                 patch.servers = {
                     [activeBack]: {
                         exe: cfgExeInp.value.trim(),
                         model_file: cfgModelFileInp.value.trim(),
+                        ctx_size: ctxNum,
                     },
                 };
             }
@@ -1827,8 +2619,9 @@ function createSandTieCore(node, {
             }
             say(action === "start" ? "Starting local writer…" : "Stopping local writer…", "hint");
             const reqBody = { action };
-            if (action === "start" && writerCfgLoaded && cfgModelFileInp.value.trim()) {
-                reqBody.model_file = cfgModelFileInp.value.trim();
+            if (action === "start" && writerCfgLoaded) {
+                if (cfgModelFileInp.value.trim()) reqBody.model_file = cfgModelFileInp.value.trim();
+                if (cfgCtxSel.value) reqBody.ctx_size = Number(cfgCtxSel.value);
             }
             const r = await fetch(LLM_URL, {
                 method: "POST", headers: { "Content-Type": "application/json" },
@@ -1925,7 +2718,7 @@ function createSandTieCore(node, {
     async function runSandTie(stage) {
         if (isBusy()) return;
         const aspSpec = parseAspectSpec(getAspect());
-        flavors.aspect = aspSpec.bucket === "either" ? aspSpec.label : aspSpec.bucket;
+        flavors.aspect = aspSpec.label || aspSpec.bucket || "16:9";
         if (standalone) {
             flavors.output_format = h3FormatCodeFromLabel(widgetByName(node, "h3_format")?.value || "");
         }
@@ -1942,7 +2735,7 @@ function createSandTieCore(node, {
                 body: JSON.stringify({
                     stage,
                     brief: briefEl.value,
-                    plan: planBox.value,
+                    plan: stage === "fast" ? "" : planBox.value,
                     duration: getDurationLabel(),
                     ref_plan: getRefPlan(),
                     start_image_file: getStartImage(),
@@ -1978,6 +2771,7 @@ function createSandTieCore(node, {
         }
     }
 
+    shell.addEventListener("click", () => closeAllPopovers(null));
     document.addEventListener("click", () => closeAllPopovers(null));
 
     // Assemble layout inside mountBody cleanly
@@ -2003,7 +2797,7 @@ function createSandTieCore(node, {
     const blockTools = el("div", "h3st-row");
     blockTools.append(telemetryPill, freshDlgBtn, copyBtn, undoBtn);
 
-    shell.append(headRow, swRow, writerCfgDrawer, activeStrip, primaryGrid, toolRow, secondaryDrawer, scriptsDrawer, clipDrawer, bibleBox);
+    shell.append(headRow, swRow, writerCfgDrawer, activeStrip, primaryGrid, toolRow, secondaryDrawer, perfBox, scriptsDrawer, clipDrawer, bibleBox);
 
     if (legacyButtons?.beforeEl && legacyButtons.beforeEl.parentElement === mountBody) {
         mountBody.insertBefore(shell, legacyButtons.beforeEl);
@@ -2025,6 +2819,21 @@ function createSandTieCore(node, {
     refreshComboSelect();
     if (_sharedCatalog) populateFromCatalog(_sharedCatalog);
     refreshStatus(!_sharedCatalog);
+    if (typeof window !== "undefined") {
+        window.addEventListener?.("htc:refmods-changed", () => {
+            fetch(SANDTIE_REFBANK_URL)
+                .then((r) => (r.ok ? r.json() : null))
+                .then((j) => {
+                    if (j?.ok && Array.isArray(j.items)) {
+                        refBankItems = j.items;
+                        if (Array.isArray(j.audio_files)) refBankAudioFiles = j.audio_files;
+                        if (_sharedCatalog) _sharedCatalog.ref_bank = refBankItems;
+                        renderReferenceBible();
+                    }
+                })
+                .catch(() => {});
+        });
+    }
 
     return {
         fastBtn,
@@ -2035,10 +2844,13 @@ function createSandTieCore(node, {
         refresh: () => {
             renderActiveStrip();
             updateTelemetry();
+            renderReferenceBible();
         },
         openBible: () => { bibleOpen = true; renderReferenceBible(); },
         usePersonalEngine: () => true,
         runPersonal: (st) => runSandTie(st),
+        shouldLinkPrevHop: () => Boolean(flavors.link_prev_hop),
+        hasActiveDials: () => ALL_DIAL_KEYS.some((k) => parseMultiValue(flavors[k]).length > 0),
         syncBlockToolbar: updateTelemetry,
     };
 }
@@ -2070,7 +2882,7 @@ export function mountSandTieInStandard(node, ctx) {
                 w.value = v;
                 try { w.callback?.(v, node.graph?.canvas, node); } catch (_) {}
             }
-            try { node._h3Editor?.refRail?.render?.(); } catch (_) {}
+            try { (node._h3Editor?.rail || node._h3Editor?.refRail)?.render?.(); } catch (_) {}
             try { ctx.onRefsChanged?.(); } catch (_) {}
         },
         getStartImage: ctx.startImage,
@@ -2079,6 +2891,7 @@ export function mountSandTieInStandard(node, ctx) {
         setBusyState: ctx.setBusyState,
         isBusy: ctx.isBusy,
         standalone: false,
+        onDialsChanged: ctx.onDialsChanged,
         legacyButtons: {
             beforeEl: ctx.brief,
             row: ctx.row,
@@ -2158,8 +2971,8 @@ export function mountSandTieStandalone(node, mountEl, { onSyncOutputs } = {}) {
         getAspect: () => {
             const wVal = Number(widgetByName(node, "width")?.value || 0);
             const hVal = Number(widgetByName(node, "height")?.value || 0);
-            if (wVal > 0 && hVal > 0) return hVal > wVal ? "9:16" : (wVal > hVal ? "16:9" : "1:1");
-            return String(widgetByName(node, "aspect")?.value || "16:9");
+            if (wVal > 0 && hVal > 0) return `${wVal}:${hVal}`;
+            return String(widgetByName(node, "aspect")?.value || "16:9 landscape");
         },
         getRefPlan: () => readRigState(node).ref_plan_json || "",
         setRefPlan: (v) => patchRigState(node, { ref_plan_json: String(v || "") }),

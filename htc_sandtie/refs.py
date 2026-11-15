@@ -62,13 +62,28 @@ def _human_name_from_filename(fname: str) -> str:
     return " ".join(parts[:3]) or "Reference"
 
 
+_GENERIC_VOICE_STEM_TOKENS = {
+    "sheet", "turnaround", "lookbook", "face", "body", "ref", "front", "back",
+    "side", "view", "full", "portrait", "profile", "closeup", "three", "quarter",
+    "outfit", "prop", "hero", "plate", "img", "image", "cast", "shot",
+}
+_EXT_STILL_FILE_RX = re.compile(
+    r"_(?:front_portrait|three_quarter|full_body|side_profile|back_view|closeup_face|outfit_prop)_\d+\.(?:png|jpe?g|webp)$",
+    re.I,
+)
+
+
 def _guess_matching_voice_file(fname: str, refs_dir_path: str) -> str:
     if not fname or not refs_dir_path or not os.path.isdir(refs_dir_path):
         return ""
     stem = os.path.splitext(os.path.basename(fname))[0].lower()
-    tokens = [t for t in re.split(r"[_\-\s]+", stem) if len(t) >= 3 and t not in ("sheet", "turnaround", "lookbook", "face", "body", "ref")]
+    tokens = [
+        t for t in re.split(r"[_\-\s]+", stem)
+        if len(t) >= 3 and not t.isdigit() and t not in _GENERIC_VOICE_STEM_TOKENS
+    ]
     if not tokens:
         return ""
+    lead_tok = tokens[0]
     audio_exts = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
     try:
         files = sorted(os.listdir(refs_dir_path))
@@ -78,7 +93,7 @@ def _guess_matching_voice_file(fname: str, refs_dir_path: str) -> str:
         if not f.lower().endswith(audio_exts):
             continue
         f_low = os.path.splitext(f)[0].lower()
-        if any(f_low == tok or f_low.startswith(tok + "_") or tok in f_low for tok in tokens[:2]):
+        if f_low == lead_tok or f_low.startswith(lead_tok + "_") or f_low.startswith(lead_tok + "-"):
             return f
     return ""
 
@@ -144,21 +159,111 @@ def _load_vision_cache() -> dict:
         return {}
 
 
+def _refmod_module():
+    try:
+        _refmod = None
+        return _refmod
+    except Exception:
+        return None
+
+
+def _clean_ref_file(raw_file: str, source: str = "image") -> str:
+    raw = str(raw_file or "").strip()
+    if not raw:
+        return ""
+    if str(source or "").strip().lower() == "refmod":
+        cleaned = raw.replace("\\", "/").strip("/")
+        if cleaned.lower().endswith(".safetensors"):
+            cleaned = cleaned[: -len(".safetensors")]
+        parts = [p for p in cleaned.split("/") if p]
+        if any(p in (".", "..") for p in parts):
+            return ""
+        return "/".join(parts)
+    return os.path.basename(raw)
+
+
+def _norm_strength(val, default: float = 1.0) -> float:
+    if val in (None, ""):
+        return default
+    try:
+        return max(0.0, min(3.0, round(float(val), 4)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _norm_step_curve(val, default: str = "full") -> str:
+    sc = str(val or default).strip().lower()
+    return sc if sc in ("full", "early_lock", "late_detail", "fade", "mid_peak") else default
+
+
+def _norm_members(val) -> list[int] | None:
+    if not isinstance(val, (list, tuple)):
+        return None
+    out: list[int] = []
+    for x in val:
+        try:
+            xi = int(x)
+        except (TypeError, ValueError):
+            continue
+        if xi >= 0 and xi not in out:
+            out.append(xi)
+    return out or None
+
+
+def _refmod_role_to_bible_role(rm_role: str) -> str:
+    r = str(rm_role or "").strip().lower()
+    if r == "background":
+        return "place"
+    if r == "helper":
+        return "prop"
+    return "subject"
+
+
+def _deleted_key(fname: str, source: str = "image") -> str:
+    return f"refmod:{fname}" if source == "refmod" else fname
+
+
 def load_ref_bank() -> list[dict]:
-    """Load saved Reference Bible entries, migrating legacy ref_bank + seeding unbanked cached scans."""
+    """Load saved Reference Bible entries, seeding vision scans and models/refmods/ RefMods."""
     with _LOCK:
         items, deleted_files = _read_raw_ref_bank_doc()
         refs_d = _resolve_refs_dir()
-        by_file: dict[str, dict] = {}
+        rm_mod = _refmod_module()
+        rm_list = []
+        rm_by_name: dict[str, dict] = {}
+        if rm_mod is not None:
+            try:
+                rm_list = list(rm_mod.listing() or [])
+                rm_by_name = {str(x.get("name") or "").lower(): x for x in rm_list if isinstance(x, dict) and x.get("name")}
+            except Exception:
+                rm_list = []
+                rm_by_name = {}
+
+        by_key: dict[tuple[str, str], dict] = {}
         seen_ids: set[str] = set()
         cleaned_items: list[dict] = []
         changed = False
 
         for raw in items:
-            fname = os.path.basename(str(raw.get("file") or "").strip())
+            source = "refmod" if str(raw.get("source") or "").strip().lower() == "refmod" else "image"
+            fname = _clean_ref_file(raw.get("file") or "", source)
             if not fname:
                 continue
-            tag = _slugify_tag(raw.get("tag") or _human_name_from_filename(fname))
+            # Auto-heal legacy duplicate where a RefMod was accidentally saved with source="image"
+            if source == "image" and "." not in os.path.basename(fname) and fname.lower() in rm_by_name:
+                source = "refmod"
+                fname = _clean_ref_file(fname, "refmod")
+                changed = True
+            # Auto-prune unedited RefMod Maker sheet-extractor intermediate stills when the RefMod exists
+            desc_raw = str(raw.get("desc") or "").strip()
+            if (
+                source == "image"
+                and _EXT_STILL_FILE_RX.search(fname)
+                and desc_raw.startswith(("Using the exact ", "Isolate the exact "))
+            ):
+                changed = True
+                continue
+            tag = _slugify_tag(raw.get("tag") or _human_name_from_filename(fname.rsplit("/", 1)[-1]))
             rid = str(raw.get("id") or "").strip()
             if not rid or rid in seen_ids:
                 rid = _unique_ref_bank_id(tag, seen_ids)
@@ -169,18 +274,22 @@ def load_ref_bank() -> list[dict]:
             if role not in ("subject", "place", "prop"):
                 role = "subject"
             voice = os.path.basename(str(raw.get("voice") or "").strip())
-            if role == "subject" and not voice and refs_d:
+            if source == "image" and role == "subject" and not voice and refs_d:
                 guessed = _guess_matching_voice_file(fname, refs_d)
                 if guessed:
                     voice = guessed
                     changed = True
+            base_label = fname.rsplit("/", 1)[-1]
+            if base_label.lower().startswith("lora:"):
+                base_label = base_label[5:]
             entry = {
                 "id": rid,
-                "name": str(raw.get("name") or _human_name_from_filename(fname)).strip(),
+                "name": str(raw.get("name") or _human_name_from_filename(base_label)).strip(),
                 "char_name": str(raw.get("char_name") or "").strip(),
                 "tag": tag,
                 "role": role,
                 "file": fname,
+                "source": source,
                 "voice": voice,
                 "desc": str(raw.get("desc") or "").strip(),
                 "locked": str(raw.get("locked") or "").strip(),
@@ -188,15 +297,38 @@ def load_ref_bank() -> list[dict]:
                 "user_edited": bool(raw.get("user_edited", False)),
                 "mtime": int(raw.get("mtime") or 0),
             }
+            if source == "refmod":
+                entry["strength"] = _norm_strength(raw.get("strength"), 1.0)
+                entry["step_curve"] = _norm_step_curve(raw.get("step_curve"), "full")
+                mems = _norm_members(raw.get("members"))
+                if mems:
+                    entry["members"] = mems
+                rm_info = rm_by_name.get(fname.lower())
+                if rm_info:
+                    if not entry["desc"] and rm_info.get("description"):
+                        entry["desc"] = str(rm_info["description"]).strip()
+                        changed = True
+                    if not entry["voice"] and (rm_info.get("voice") or {}).get("file"):
+                        entry["voice"] = os.path.basename(str(rm_info["voice"]["file"]).strip())
+                        changed = True
+                    if not entry["user_edited"] and rm_info.get("default_step_curve") and entry["step_curve"] == "full":
+                        entry["step_curve"] = _norm_step_curve(rm_info["default_step_curve"], "full")
+                    entry["refmod_format"] = str(rm_info.get("format") or "v4")
+                    entry["refmod_role"] = str(rm_info.get("role") or "generic")
+                    entry["refmod_tokens"] = int(rm_info.get("tokens") or 0)
+                    entry["refmod_has_looks"] = bool(rm_info.get("has_looks"))
+                    entry["refmod_members"] = int(rm_info.get("members_count") or 1)
+                    entry["refmod_has_audio"] = bool(rm_info.get("has_audio_latent"))
             if not entry["char_name"] and role == "subject":
                 entry["char_name"] = extract_char_name_from_tag(tag, entry["name"]) or entry["name"].split()[0]
-            if fname in by_file:
+            fk = (source, fname.lower())
+            if fk in by_key:
                 changed = True
                 continue
-            by_file[fname] = entry
+            by_key[fk] = entry
             cleaned_items.append(entry)
 
-        # Seed unbanked items from vision cache
+        # Seed unbanked image scans from vision cache
         vcache = _load_vision_cache()
         if isinstance(vcache, dict) and vcache:
             for k, desc_val in sorted(vcache.items()):
@@ -207,7 +339,7 @@ def load_ref_bank() -> list[dict]:
                     continue
                 fpath, _, role_k = parts[1], parts[2], parts[3]
                 fname = os.path.basename(fpath)
-                if not fname or fname in deleted_files or fname in by_file:
+                if not fname or fname in deleted_files or ("image", fname.lower()) in by_key:
                     continue
                 d_str = desc_val.strip()
                 if is_studio_backdrop_text(d_str):
@@ -227,6 +359,7 @@ def load_ref_bank() -> list[dict]:
                     "tag": tag,
                     "role": role,
                     "file": fname,
+                    "source": "image",
                     "voice": _guess_matching_voice_file(fname, refs_d) if role == "subject" and refs_d else "",
                     "desc": clean_d,
                     "locked": "",
@@ -234,23 +367,100 @@ def load_ref_bank() -> list[dict]:
                     "user_edited": False,
                     "mtime": int(os.path.getmtime(os.path.join(refs_d, fname))) if (refs_d and os.path.isfile(os.path.join(refs_d, fname))) else 0,
                 }
-                by_file[fname] = entry
+                by_key[("image", fname.lower())] = entry
                 cleaned_items.append(entry)
                 changed = True
 
+        # Seed unbanked RefMods from models/refmods/ (and unified RefLoRAs)
+        for rm_info in rm_list:
+            if not isinstance(rm_info, dict) or rm_info.get("kind") == "audio":
+                continue
+            rname = _clean_ref_file(rm_info.get("name") or "", "refmod")
+            if not rname:
+                continue
+            del_tok = _deleted_key(rname, "refmod")
+            if del_tok in deleted_files or ("refmod", rname.lower()) in by_key:
+                continue
+            role = _refmod_role_to_bible_role(rm_info.get("role") or "generic")
+            base_label = rname.rsplit("/", 1)[-1]
+            if base_label.lower().startswith("lora:"):
+                base_label = base_label[5:]
+            tag = _slugify_tag(base_label)
+            hname = _human_name_from_filename(base_label)
+            rm_path = rm_mod.resolve(rname) if rm_mod is not None else None
+            rm_mtime = 0
+            if rm_path and os.path.isfile(rm_path):
+                try:
+                    rm_mtime = int(os.path.getmtime(rm_path))
+                except OSError:
+                    rm_mtime = 0
+            entry = {
+                "id": _unique_ref_bank_id(f"{tag}_mod", seen_ids),
+                "name": hname,
+                "char_name": extract_char_name_from_tag(tag, hname) if role == "subject" else "",
+                "tag": tag,
+                "role": role,
+                "file": rname,
+                "source": "refmod",
+                "voice": os.path.basename(str((rm_info.get("voice") or {}).get("file") or "").strip()),
+                "desc": str(rm_info.get("description") or "").strip(),
+                "locked": "",
+                "context": "",
+                "strength": 1.0,
+                "step_curve": _norm_step_curve(rm_info.get("default_step_curve"), "full"),
+                "user_edited": False,
+                "mtime": rm_mtime,
+                "refmod_format": str(rm_info.get("format") or "v4"),
+                "refmod_role": str(rm_info.get("role") or "generic"),
+                "refmod_tokens": int(rm_info.get("tokens") or 0),
+                "refmod_has_looks": bool(rm_info.get("has_looks")),
+                "refmod_members": int(rm_info.get("members_count") or 1),
+                "refmod_has_audio": bool(rm_info.get("has_audio_latent")),
+            }
+            by_key[("refmod", rname.lower())] = entry
+            cleaned_items.append(entry)
+            changed = True
+
         if changed or not os.path.isfile(ref_bank_path()):
-            _write_raw_ref_bank(cleaned_items, deleted_files=deleted_files)
-        cleaned_items.sort(key=lambda x: ({"subject": 0, "place": 1, "prop": 2}.get(x["role"], 9), x["name"].lower()))
+            _persist_keys = (
+                "id", "name", "char_name", "tag", "role", "file", "source",
+                "voice", "desc", "locked", "context", "user_edited", "mtime",
+                "strength", "step_curve", "members",
+            )
+            disk_items = [{k: v for k, v in it.items() if k in _persist_keys} for it in cleaned_items]
+            _write_raw_ref_bank(disk_items, deleted_files=deleted_files)
+        cleaned_items.sort(key=lambda x: ({"subject": 0, "place": 1, "prop": 2}.get(x["role"], 9), 1 if x.get("source") == "refmod" else 0, x["name"].lower()))
         return cleaned_items
 
 
-def find_ref_bank_entry(file_name: str = "", tag: str = "", bank: list[dict] | None = None) -> dict | None:
+def sync_refmods_to_bank() -> list[dict]:
+    """Clear RefMod dismissals and re-seed all RefMods on disk into Reference Bible."""
+    with _LOCK:
+        items, deleted_files = _read_raw_ref_bank_doc()
+        next_deleted = {d for d in deleted_files if not d.startswith("refmod:")}
+        if next_deleted != deleted_files:
+            _write_raw_ref_bank(items, deleted_files=next_deleted)
+    return load_ref_bank()
+
+
+def find_ref_bank_entry(file_name: str = "", tag: str = "", bank: list[dict] | None = None, source: str = "") -> dict | None:
     items = bank if bank is not None else load_ref_bank()
-    f_clean = os.path.basename(str(file_name or "").strip()).lower()
+    src_want = str(source or "").strip().lower()
+    f_raw = str(file_name or "").strip()
+    f_clean_rm = _clean_ref_file(f_raw, "refmod").lower()
+    f_clean_img = os.path.basename(f_raw).lower()
     t_clean = str(tag or "").lstrip("@").strip().lower()
-    if f_clean:
+    if f_raw:
+        if src_want:
+            target_f = f_clean_rm if src_want == "refmod" else f_clean_img
+            for it in items:
+                it_src = str(it.get("source") or "image").lower()
+                if it_src == src_want and _clean_ref_file(it.get("file") or "", it_src).lower() == target_f:
+                    return it
         for it in items:
-            if os.path.basename(str(it.get("file") or "")).lower() == f_clean:
+            it_src = str(it.get("source") or "image").lower()
+            it_f = _clean_ref_file(it.get("file") or "", it_src).lower()
+            if it_f == (f_clean_rm if it_src == "refmod" else f_clean_img):
                 return it
     if t_clean:
         for it in items:
@@ -260,26 +470,38 @@ def find_ref_bank_entry(file_name: str = "", tag: str = "", bank: list[dict] | N
 
 
 def upsert_ref_bank_item(item: dict, *, user_edited: bool = True) -> dict:
-    fname = os.path.basename(str(item.get("file") or "").strip())
+    source = "refmod" if str(item.get("source") or "").strip().lower() == "refmod" else "image"
+    fname = _clean_ref_file(item.get("file") or "", source)
     if not fname:
         raise ValueError("Reference Bible item requires a file name.")
     with _LOCK:
         items, deleted_files = _read_raw_ref_bank_doc()
         deleted_files.discard(fname)
+        deleted_files.discard(_deleted_key(fname, source))
         rid = str(item.get("id") or "").strip()
         used_ids = {str(x.get("id") or "") for x in items if x.get("id")}
         existing_idx = next(
-            (i for i, x in enumerate(items) if (rid and x.get("id") == rid) or os.path.basename(str(x.get("file") or "")).lower() == fname.lower()),
+            (
+                i for i, x in enumerate(items)
+                if (rid and x.get("id") == rid)
+                or (
+                    str(x.get("source") or "image").lower() == source
+                    and _clean_ref_file(x.get("file") or "", source).lower() == fname.lower()
+                )
+            ),
             None,
         )
         old = items[existing_idx] if existing_idx is not None else {}
-        tag = _slugify_tag(item.get("tag") or old.get("tag") or _human_name_from_filename(fname))
+        base_label = fname.rsplit("/", 1)[-1]
+        if base_label.lower().startswith("lora:"):
+            base_label = base_label[5:]
+        tag = _slugify_tag(item.get("tag") or old.get("tag") or _human_name_from_filename(base_label))
         if not rid:
             rid = old.get("id") or _unique_ref_bank_id(tag, used_ids)
         role = str(item.get("role") or old.get("role") or "subject").strip().lower()
         if role not in ("subject", "place", "prop"):
             role = "subject"
-        name = str(item.get("name") or old.get("name") or _human_name_from_filename(fname)).strip()
+        name = str(item.get("name") or old.get("name") or _human_name_from_filename(base_label)).strip()
         char_name = str(item.get("char_name") if item.get("char_name") is not None else (old.get("char_name") or "")).strip()
         if role == "subject" and not char_name:
             char_name = extract_char_name_from_tag(tag, name) or name.split()[0]
@@ -290,6 +512,7 @@ def upsert_ref_bank_item(item: dict, *, user_edited: bool = True) -> dict:
             "tag": tag,
             "role": role,
             "file": fname,
+            "source": source,
             "voice": os.path.basename(str(item.get("voice") if item.get("voice") is not None else (old.get("voice") or "")).strip()),
             "desc": str(item.get("desc") if item.get("desc") is not None else (old.get("desc") or "")).strip(),
             "locked": str(item.get("locked") if item.get("locked") is not None else (old.get("locked") or "")).strip(),
@@ -297,6 +520,12 @@ def upsert_ref_bank_item(item: dict, *, user_edited: bool = True) -> dict:
             "user_edited": bool(user_edited or old.get("user_edited")),
             "mtime": int(item.get("mtime") or old.get("mtime") or 0),
         }
+        if source == "refmod":
+            entry["strength"] = _norm_strength(item.get("strength") if "strength" in item else old.get("strength"), 1.0)
+            entry["step_curve"] = _norm_step_curve(item.get("step_curve") if "step_curve" in item else old.get("step_curve"), "full")
+            mems = _norm_members(item.get("members") if "members" in item else old.get("members"))
+            if mems:
+                entry["members"] = mems
         if existing_idx is not None:
             items[existing_idx] = entry
         else:
@@ -305,19 +534,23 @@ def upsert_ref_bank_item(item: dict, *, user_edited: bool = True) -> dict:
         return entry
 
 
-def delete_ref_bank_item(item_id: str, file_name: str = "") -> bool:
+def delete_ref_bank_item(item_id: str, file_name: str = "", source: str = "") -> bool:
     iid = str(item_id or "").strip()
-    fn = os.path.basename(str(file_name or "").strip()).lower()
+    src_want = str(source or "").strip().lower()
+    fn_clean = _clean_ref_file(file_name or "", src_want or "image").lower()
     with _LOCK:
         items, deleted_files = _read_raw_ref_bank_doc()
         kept = []
         removed = False
         for it in items:
-            it_fn = os.path.basename(str(it.get("file") or "")).lower()
-            if (iid and it.get("id") == iid) or (fn and it_fn == fn):
+            it_src = str(it.get("source") or "image").lower()
+            it_fn = _clean_ref_file(it.get("file") or "", it_src).lower()
+            match_id = bool(iid and it.get("id") == iid)
+            match_fn = bool(fn_clean and it_fn == fn_clean and (not src_want or it_src == src_want))
+            if match_id or match_fn:
                 removed = True
                 if it.get("file"):
-                    deleted_files.add(os.path.basename(str(it["file"])))
+                    deleted_files.add(_deleted_key(_clean_ref_file(it["file"], it_src), it_src))
                 continue
             kept.append(it)
         if removed:
@@ -330,7 +563,8 @@ def import_rail_to_ref_bank(ref_plan_text: str, voice_files: tuple | list = ()) 
     subs = plan.get("subjects") or {}
     mvf = [str(v or "").strip() for v in (voice_files or ()) if str(v or "").strip()]
     for r in plan.get("refs") or []:
-        fname = os.path.basename(str(r.get("file") or "").strip())
+        source = "refmod" if str(r.get("source") or "").strip().lower() == "refmod" else "image"
+        fname = _clean_ref_file(r.get("file") or "", source)
         if not fname:
             continue
         sn = r.get("subject")
@@ -342,20 +576,27 @@ def import_rail_to_ref_bank(ref_plan_text: str, voice_files: tuple | list = ()) 
             voice = os.path.basename(mvf[0])
         elif not voice and sn == 2 and len(mvf) >= 2:
             voice = os.path.basename(mvf[1])
-        upsert_ref_bank_item(
-            {
-                "file": fname,
-                "tag": r.get("tag") or "",
-                "role": role,
-                "name": (s_meta or {}).get("name") or _human_name_from_filename(fname),
-                "char_name": (s_meta or {}).get("name") or extract_char_name_from_tag(r.get("tag") or ""),
-                "voice": voice,
-                "desc": r.get("desc") or "",
-                "locked": (s_meta or {}).get("locked") or "",
-                "context": (s_meta or {}).get("context") or "",
-            },
-            user_edited=True,
-        )
+        base_label = fname.rsplit("/", 1)[-1]
+        if base_label.lower().startswith("lora:"):
+            base_label = base_label[5:]
+        payload = {
+            "file": fname,
+            "source": source,
+            "tag": r.get("tag") or "",
+            "role": role,
+            "name": (s_meta or {}).get("name") or _human_name_from_filename(base_label),
+            "char_name": (s_meta or {}).get("name") or extract_char_name_from_tag(r.get("tag") or ""),
+            "voice": voice or None,
+            "desc": r.get("desc") or None,
+            "locked": (s_meta or {}).get("locked") or None,
+            "context": (s_meta or {}).get("context") or None,
+        }
+        if source == "refmod":
+            payload["strength"] = r.get("strength", 1.0)
+            payload["step_curve"] = r.get("step_curve") or "full"
+            if r.get("members"):
+                payload["members"] = r["members"]
+        upsert_ref_bank_item(payload, user_edited=True)
     return load_ref_bank()
 
 
@@ -501,10 +742,12 @@ def _row_voice(r: dict) -> str:
     if v:
         return v
     if r.get("source") == "refmod" and str(r.get("file") or "").strip():
-        try:
-            return ""
-        except Exception:
-            return ""
+        rm_mod = _refmod_module()
+        if rm_mod is not None:
+            try:
+                return str((rm_mod.stored_voice(r["file"]) or {}).get("file") or "").strip()
+            except Exception:
+                return ""
     return ""
 
 
@@ -553,7 +796,7 @@ def sandtie_labels(ref_plan_text: str, voice_files: tuple | list = ()) -> dict:
     for r in pics:
         sn = r.get("subject")
         s_meta = (sub_meta_map.get(sn) or {}) if sn is not None else {}
-        bank_hit = find_ref_bank_entry(file_name=r.get("file") or "", tag=r.get("tag") or "", bank=bank)
+        bank_hit = find_ref_bank_entry(file_name=r.get("file") or "", tag=r.get("tag") or "", bank=bank, source=r.get("source") or "")
         raw_desc = str(r.get("desc") or "").strip()
         if not raw_desc and bank_hit and bank_hit.get("desc"):
             raw_desc = str(bank_hit["desc"]).strip()
@@ -572,6 +815,8 @@ def sandtie_labels(ref_plan_text: str, voice_files: tuple | list = ()) -> dict:
             "n": ords[r["tag"]],
             "tag": r["tag"],
             "file": r.get("file") or "",
+            "source": r.get("source", "image"),
+            "members": r.get("members"),
             "desc": desc_clean,
             "raw_desc": raw_desc,
             "box_prose": box_prose,
@@ -590,7 +835,7 @@ def sandtie_labels(ref_plan_text: str, voice_files: tuple | list = ()) -> dict:
             continue
         vf = _row_voice(r)
         if not vf:
-            bank_hit = find_ref_bank_entry(file_name=r.get("file") or "", tag=r.get("tag") or "", bank=bank)
+            bank_hit = find_ref_bank_entry(file_name=r.get("file") or "", tag=r.get("tag") or "", bank=bank, source=r.get("source") or "")
             vf = str((bank_hit or {}).get("voice") or "").strip()
         if not vf:
             continue
@@ -612,7 +857,7 @@ def sandtie_labels(ref_plan_text: str, voice_files: tuple | list = ()) -> dict:
         if s is None:
             continue
         meta = sub_meta_map.get(s) or {}
-        bank_hit = find_ref_bank_entry(file_name=p.get("file") or "", tag=p.get("tag") or "", bank=bank)
+        bank_hit = find_ref_bank_entry(file_name=p.get("file") or "", tag=p.get("tag") or "", bank=bank, source=p.get("source") or "")
         box_name = str(meta.get("name") or "").strip()
         bank_cname = str((bank_hit or {}).get("char_name") or "").strip()
         char_name = bank_cname or extract_char_name_from_tag(p.get("tag") or "", box_name) or box_name
@@ -687,7 +932,7 @@ def label_lines(lab: dict) -> list[str]:
     lines = []
     for n, s in (lab.get("subjects") or {}).items():
         cname = s.get("char_name") or s.get("name") or ""
-        nm = f" ({cname})" if cname else ""
+        nm = f" {cname}" if cname else ""
         where = list(s.get("pictures") or []) + [f"voice {a}" for a in (s.get("audios") or [])]
         lines.append(f"<Subject {n}>{nm}: in {', '.join(where)}")
     for p in lab.get("pictures") or []:

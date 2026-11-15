@@ -49,14 +49,46 @@ def stamp(sec: float) -> str:
     return f"{m:02d}:{r:06.3f}"
 
 
+def aspect_bucket(aspect: str = "") -> str:
+    s = str(aspect or "").strip()
+    m = re.search(r"(\d+)\s*:\s*(\d+)", s)
+    if m:
+        rw, rh = int(m.group(1)), int(m.group(2))
+        if rw > 0 and rh > 0:
+            if rh > rw:
+                return "9:16"
+            if rw > rh:
+                return "16:9"
+            return "1:1"
+    if re.search(r"\b(?:vertical|portrait)\b", s, re.I):
+        return "9:16"
+    if re.search(r"\b(?:horizontal|landscape|widescreen)\b", s, re.I):
+        return "16:9"
+    if re.search(r"\bsquare\b", s, re.I):
+        return "1:1"
+    return ""
+
+
 def detect_canvas_aspect(brief: str = "", node_aspect: str = "", camera_id: str = "", plan: str = "", plan_hint: str = "") -> str:
     na = str(node_aspect or "").strip()
-    if na in ("9:16", "16:9"):
-        return na
-    combined = f"{brief or ''}\n{plan or ''}\n{plan_hint or ''}"
-    if re.search(r"\b(?:9:16|vertical|portrait)\b", combined, re.I):
+    m = re.search(r"(\d+)\s*:\s*(\d+)", na)
+    if m:
+        rw, rh = int(m.group(1)), int(m.group(2))
+        if rw > 0 and rh > 0:
+            return f"{rw}:{rh}"
+    if re.search(r"\b(?:vertical|portrait)\b", na, re.I):
         return "9:16"
-    if re.search(r"\b(?:16:9|horizontal|landscape|widescreen)\b", combined, re.I):
+    if re.search(r"\b(?:horizontal|landscape|widescreen)\b", na, re.I):
+        return "16:9"
+    if re.search(r"\bsquare\b", na, re.I):
+        return "1:1"
+    combined = f"{brief or ''}\n{plan or ''}\n{plan_hint or ''}"
+    m2 = re.search(r"\b(21:9|16:9|3:2|4:3|5:4|1:1|4:5|3:4|2:3|9:16|9:21)\b", combined)
+    if m2:
+        return m2.group(1)
+    if re.search(r"\b(?:vertical|portrait)\b", combined, re.I):
+        return "9:16"
+    if re.search(r"\b(?:horizontal|landscape|widescreen)\b", combined, re.I):
         return "16:9"
     if camera_id in ("portrait_vertical_stack", "selfie_arm", "selfie_high_overhead", "selfie_shoulder", "elevator_3stop", "yoyo_tilt", "pedestal_up", "pedestal_down", "tilt_up", "tilt_down"):
         return "9:16"

@@ -1466,6 +1466,132 @@
       "domain": "general",
       "duration_best": "6-12 s",
       "duration_tip": "⏱ BEST LENGTH: 6–12 s (141–294f) — Standard H3 motion window (minimum 124f / 5.2s for clear camera travel)."
+    },
+    {
+      "id": "buckle_up_car_interior",
+      "label": "🚗 Buckle-Up Car Cabin Mount (Rigid Interior, World Streaks Past)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "camera locked inside the car cabin beside the subjects so the seats, steering wheel, and faces remain tack-sharp while headlights, neon signage, and road geometry streak smoothly past the side windows",
+      "aspect_best": "either",
+      "domain": "car_cabin",
+      "duration_best": "8-12 s"
+    },
+    {
+      "id": "car_chasing_pursuit",
+      "label": "🏎️ Car Chasing Pursuit Rig (Matched Speed Line-of-Action)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "low pursuit tracking shot gliding from a chasing vehicle at matched highway speed, locking both vehicles along one line of action as asphalt, guardrails, and sparks whip underneath",
+      "aspect_best": "16:9",
+      "domain": "combat_action",
+      "duration_best": "8-12 s"
+    },
+    {
+      "id": "car_hood_door_grip",
+      "label": "🚘 Exterior Hood / Door Grip Mount (Chrome & Asphalt Speed)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "exterior chassis-mounted lens framing painted metal hood or door chrome rigidly in the near foreground while wet asphalt streaks backward beneath and the driver stays visible through the windshield",
+      "aspect_best": "16:9",
+      "domain": "car_cabin",
+      "duration_best": "6-10 s"
+    },
+    {
+      "id": "conveyor_lateral_belt",
+      "label": "🎞️ Conveyor Constant Lateral Belt (Relentless Steady Slide)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "relentless constant-speed lateral trucking shot gliding sideways like a conveyor belt at steady tempo while rows of subjects, props, or neon bays pass cleanly across frame",
+      "aspect_best": "16:9",
+      "domain": "general",
+      "duration_best": "8-12 s"
+    },
+    {
+      "id": "flying_cam_wall_portal",
+      "label": "🛸 Flying Cam Continuous Room-Punch (Doorway/Window Glide)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "one continuous fluid drone-glide trajectory flying smoothly forward straight through an open window, doorway, or curtain threshold to reveal a completely new interior space on the far side",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "10-14 s"
+    },
+    {
+      "id": "lazy_susan_turntable_orbit",
+      "label": "🔄 Lazy Susan Fixed-Radius 360° Turntable Showcase",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "fixed-radius circular showcase orbit keeping the centered figure or object at constant screen scale while lighting reflections and background planes sweep cleanly around 360 degrees",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "6-10 s"
+    },
+    {
+      "id": "trunk_shot_low_pit",
+      "label": "🧰 Trunk Shot (Steep Upward Look from Inside Trunk Rim)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "steep upward low-angle framing placed inside an open car trunk or deep container looking up past the dark interior rim as the faces lean down into view against the sky or ceiling lights",
+      "aspect_best": "16:9",
+      "domain": "combat_action",
+      "duration_best": "6-10 s"
+    },
+    {
+      "id": "object_pov_rigid",
+      "label": "📦 Object POV (Camera Locked Onto Moving Prop / Cup / Blade)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "first-person object perspective mounted directly onto a moving prop (glass, suitcase, skateboard, or blade edge) so the object stays anchored in the foreground while hands and the room swing around it",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "6-10 s"
+    },
+    {
+      "id": "through_object_portal_in",
+      "label": "🕳️ Through-Object Scale Push (Keyhole / Glass / Frame Dive)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "smooth forward push-in diving directly through a small aperture (keyhole, glass rim, mirror gap, or teacup) that opens seamlessly into a full-scale room and subject beyond",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "8-12 s"
+    },
+    {
+      "id": "wandering_curiosity_drift",
+      "label": "👀 Wandering Curiosity Drift (Searching Handheld Float)",
+      "group": "00 · Vehicle, Rig & Kinetic Transitions",
+      "rule": "gentle unhurried handheld float drifting curiously past foreground silhouettes, tables, and warm practical lamps across the room before smoothly landing onto the main subject",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "8-12 s"
+    },
+    {
+      "id": "short_siding_tension",
+      "label": "📐 Short-Siding Pressure Framing (Face Pressed Toward Edge)",
+      "group": "00 · Multi-Angle, Action-Follow & Coverage",
+      "rule": "tense asymmetrical composition placing the speaker close to the frame edge they face toward with broad open room space stretching behind their shoulders",
+      "aspect_best": "16:9",
+      "domain": "general",
+      "duration_best": "6-10 s"
+    },
+    {
+      "id": "voyeur_concealed_frame",
+      "label": "🪟 Voyeur Concealed Frame (Peering Past Foliage / Blinds)",
+      "group": "00 · Multi-Angle, Action-Follow & Coverage",
+      "rule": "distant concealed viewpoint peering softly past slightly out-of-focus foreground blinds, doorway jamb, or window glass onto the illuminated subjects deeper inside the room",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "6-10 s"
+    },
+    {
+      "id": "graphic_match_cut",
+      "label": "⭕ Graphic Match Cut (Matching Circular/Linear Geometry Cut)",
+      "group": "00 · Multi-Angle, Action-Follow & Coverage",
+      "rule": "two-shot graphic match cut: [Shot 1] centers a distinct circular or vertical geometric shape moving cleanly in frame, then cuts smoothly onto a matching shape at the exact screen position inside [Shot 2]",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "8-12 s"
+    },
+    {
+      "id": "smash_cut_contrast",
+      "label": "⚡ Smash Cut Contrast (Quiet Pause -> Sudden Energy Shift)",
+      "group": "00 · Multi-Angle, Action-Follow & Coverage",
+      "rule": "high-contrast two-shot smash cut: [Shot 1] holds a calm, still close framing in soft room tone before cutting sharply into [Shot 2] bursting with immediate kinetic motion and crisp ambient impact",
+      "aspect_best": "either",
+      "domain": "general",
+      "duration_best": "8-12 s"
     }
   ]
 }
