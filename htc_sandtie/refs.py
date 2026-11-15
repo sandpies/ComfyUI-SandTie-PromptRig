@@ -12,7 +12,6 @@ from ..htc_compat import refs as _refs
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PACK_ROOT = os.path.dirname(HERE)
-_LEGACY_PERSONAL_DATA = ""
 _LOCK = threading.Lock()
 
 
@@ -32,7 +31,7 @@ def user_data_dir() -> str:
 
 
 def _migrate_legacy_json(filename: str, target_path: str) -> None:
-    """No-op in standalone pack (uses user_data_dir() directly)."""
+    """No-op: Reference Bible data lives in user_data_dir() only."""
     return
 
 
@@ -258,6 +257,7 @@ def load_ref_bank() -> list[dict]:
             desc_raw = str(raw.get("desc") or "").strip()
             if (
                 source == "image"
+                and not raw.get("user_edited")   # never prune an entry the user touched
                 and _EXT_STILL_FILE_RX.search(fname)
                 and desc_raw.startswith(("Using the exact ", "Isolate the exact "))
             ):

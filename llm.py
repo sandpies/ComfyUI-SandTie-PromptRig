@@ -2072,6 +2072,7 @@ def free_for_render(settle_sleep=None):
                 deadline = t_start + settle
                 best_free = 0
                 stable_ticks = 0
+                rose = False
                 try:
                     best_free, total_vram = torch.cuda.mem_get_info()
                 except Exception:
@@ -2090,8 +2091,12 @@ def free_for_render(settle_sleep=None):
                         if cur_free > best_free + (64 * 1024 * 1024):
                             best_free = cur_free
                             stable_ticks = 0
+                            rose = True
                         else:
                             stable_ticks += 1
-                            if stable_ticks >= 3 and (time.monotonic() - t_start) >= 0.45:
+                            # Quiet only counts AFTER the release has started: a killed
+                            # server can take over a second to hand VRAM back, and
+                            # leaving before it does loads the DiT into taken memory.
+                            if rose and stable_ticks >= 3 and (time.monotonic() - t_start) >= 0.45:
                                 break
     return f"writer unloaded: {note}"

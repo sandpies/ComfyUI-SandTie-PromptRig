@@ -299,6 +299,14 @@ def _collect_conditioning_media(
                                 break
                     except Exception:
                         tensor = None
+                if tensor is None:
+                    # Same rule as a missing image: dropping the row silently would shift
+                    # every later <Picture N> the compiled prompt cites.
+                    raise FileNotFoundError(
+                        f"{TAG}: Reference Bible RefMod '{fname}' has no readable picture "
+                        "(no file in models/refmods/, or no kept looks/enc_ photo in it). "
+                        "Rebuild it with kept photos, or remove it from the rail."
+                    )
             else:
                 tensor = _media.load_image(fname, cap_mp=float(r.get("mp") or 0.0))
                 if tensor is None:
@@ -466,6 +474,17 @@ class SandTiePromptRig(io.ComfyNode):
             ],
             hidden=[io.Hidden.dynprompt, io.Hidden.unique_id],
         )
+
+    @classmethod
+    def validate_inputs(cls, aspect=None):
+        """Accept graphs saved before the 11-aspect suite. 1.0.0 stored "16:9" / "9:16",
+        which core's combo check rejects now that the options read "16:9 landscape" etc.
+        Naming `aspect` here skips that check for it alone; anything `_parse_aspect_ratio`
+        reads as W:H (or portrait/vertical) is fine, the rest is refused readably."""
+        raw = str(aspect or "").strip()
+        if not raw or raw in ASPECT_RATIOS or re.search(r"\d+\s*:\s*\d+|portrait|vertical", raw, re.I):
+            return True
+        return f"aspect {raw!r} is not a ratio; pick one of: {', '.join(ASPECTS)}"
 
     @classmethod
     def fingerprint_inputs(cls, wire_mode=None, rig_state="{}", **kwargs):
