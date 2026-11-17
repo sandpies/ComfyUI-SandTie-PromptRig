@@ -50,9 +50,9 @@ Ready-to-run graphs ship in [`example_workflows/`](./example_workflows):
 ## Inside SandTie Studio (`⬒ Open SandTie Studio`)
 
 - **19 Clean-Room Director Dials (2-Tier):**
-  - *Primary 8:* `Cam`, `Light` (61 options incl. `Soft Natural Light` & `Soft Natural Window Light`), `Style`, `Place`, `Wear`, `Action`, `Stage`, `Speech`.
-  - *Optics, Grade, Dance & Audio Drawer (11):* `Optics`, `Grade`, `FX` (`Delayed Mid` / `From Start`), `Dance / Pose` (`95` TikTok, K-Pop idol, club/heels & ensemble flows), `Playbook`, `Cast Type`, `Genre`, `Era`, `Accent`, `Ambience`, `Music`.
-- **41 Built-In Presets + Smart Roll:** Domain-locked & aspect-safe (`16:9` / `9:16`) **Surprise Roll**, **Match Dials** from brief keywords, **Compose Brief**, **25 Clean Showcase Scripts**, and **❝ Fresh Dialogue** rewrites.
+  - *Primary 8:* `Cam` (`171`), `Light` (`71` options incl. `Soft Natural Light` & `Soft Natural Window Light`), `Style` (`94`), `Place` (`127` incl. plain enclosed & window bedrooms + combat/dance plates), `Wear` (`149`), `Action` (`178` incl. blow-for-blow `ms` fights), `Stage` (`380`), `Speech` (`60`).
+  - *Optics, Grade, Dance & Audio Drawer (11):* `Optics` (`94`), `Grade` (`44`), `FX` (`106`, `Delayed Mid` / `From Start`), `Dance / Pose` (`200` TikTok, K-Pop idol, waacking/crunk, duet & ensemble flows), `Playbook` (`49`), `Cast Type` (`40`), `Genre` (`8`), `Era` (`17`), `Accent` (`30`), `Ambience` (`45` incl. `Pure Music N/A`), `Music` (`52`).
+- **114 Built-In Presets + Smart Roll:** Domain-locked & aspect-safe (`16:9` / `4:3` / `9:16`) **Surprise Roll**, **Match Dials** from brief keywords, **Compose Brief**, **47 Clean Showcase Scripts**, and **❝ Fresh Dialogue** rewrites.
 - **Built-In MiniMax H3 Rules:** Zero non-`<d>` negations, automatic TTS cleanup (`<d>[voice] "..."</d>`), semicolon/speech stripping from `overall_soundscape:` & `non_diegetic_music:`, 12 H3 motion primitives, Open-End Range & Background Plate amplitude laws, and a live `7,000`-char encoder counter.
 - **All 6 MiniMax H3 Output Formats:** `Ref2VA / T2VA`, `I2VA` (`0.00 seconds` anchor), `FL2VA` (`0.00` + end-mark), `L2VA` (end-mark), `Start Frame Prep` (`p-h3-image`), and `Storyboard Beats Only`.
 
