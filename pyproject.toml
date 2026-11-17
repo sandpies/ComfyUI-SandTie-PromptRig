@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-sandtie-prompt-rig"
-version = "1.1.0"
+version = "1.2.0"
 description = "Standalone MiniMax H3 Prompt & Conditioning Rig with 19 clean-room director dials, dynamic Autogrow (1-9) reference pins, Reference Bible casting, and 0-VRAM CPU Tie."
 license = { file = "LICENSE" }
 dependencies = []
