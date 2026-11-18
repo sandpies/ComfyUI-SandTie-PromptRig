@@ -66,11 +66,6 @@ REF2VA_FIELDS = (
     "subject_definitions:", "summary:", "retention_analysis:",
     "detailed_description:", "overall_soundscape:", "non_diegetic_music:",
 )
-_SHOT = re.compile(r"\[Shot (\d+)\]\s*(At (\d+):(\d+(?:\.\d+)?))?", re.I)
-_RANGE = re.compile(r"\bAt (\d+):(\d+(?:\.\d+)?)\s*-\s*(\d+):(\d+(?:\.\d+)?)", re.I)
-_NEG = re.compile(r"\b(no|not|never|without|avoid|don't|doesn't|isn't|can't|won't)\b", re.I)
-_DLG = re.compile(r"<d>.*?</d>", re.S | re.I)
-_LABEL = re.compile(r"<(Picture|Subject|Video|Audio) (\d+)>")
 
 
 def _field(text, name):
@@ -87,21 +82,48 @@ def _field(text, name):
     return t[i + len(name):j]
 
 
-def _secs(m, a, b):
-    return int(m.group(a)) * 60 + float(m.group(b))
-
-
 def mode_for(lab):
     return "Ref2VA" if ((lab or {}).get("pictures") or (lab or {}).get("audios")) else "T2VA"
 
 
-def contract_errors(block, *, mode, lab, duration_s):
+_SHOT = re.compile(r"\[Shot (\d+)\]\s*(At (\d+):(\d+(?:\.\d+)?))?", re.I)
+_RANGE = re.compile(r"\bAt (\d+):(\d+(?:\.\d+)?)\s*-\s*(\d+):(\d+(?:\.\d+)?)", re.I)
+_NEG = re.compile(r"\b(no|not|never|without|avoid|don't|doesn't|isn't|can't|won't)\b", re.I)
+_DLG = re.compile(r"<d>(.*?)</d>", re.S | re.I)
+_LABEL = re.compile(r"<(Picture|Subject|Video|Audio) (\d+)>")
+_ALLOWED_TASK_TAGS = {
+    "keyframe completion",
+    "reference generation",
+    "video editing",
+    "video continuation",
+    "audio reuse",
+    "audio reference",
+}
+_TEMPLATE_LEAK = re.compile(r"\{[^{}\n]{2,60}\}")
+_MEDIA_RANGE = re.compile(r"<(Picture|Video|Audio)\s+\d+>\s*(?:-|to|through|\u2013|\u2014)\s*<\1\s+\d+>", re.I)
+_SPEECH_EMPTY_D = re.compile(
+    r"^(?:\[(?:English|Spanish|Japanese|Korean|Mandarin|Cantonese|Chinese|French|German|Italian|Portuguese|Russian|Arabic|Hindi|Lang)\]\s*)?"
+    r"(?:[\(\[]?(?:no\s+dialogue[^)\]]*|no\s+speech[^)\]]*|silent(?:\s+focus)?|silence|none|n/?a|\.{2,})[\)\]]?\.?)?$",
+    re.I,
+)
+
+
+def _secs(m, a, b):
+    return int(m.group(a)) * 60 + float(m.group(b))
+
+
+def contract_errors(block, *, mode, lab, duration_s, start_image=None):
+    """What would misparse or misdirect the encoder. -> [error strings]."""
     t = str(block or "")
     errs = []
     if not t.strip():
         return ["the block is empty"]
     if "```" in t:
         errs.append("remove the markdown fences: the block is pasted as is")
+    if _TEMPLATE_LEAK.search(t):
+        errs.append("remove any unreplaced {placeholder} template tokens")
+    if _MEDIA_RANGE.search(t):
+        errs.append("list each <Picture N> / <Audio N> individually; never write range shorthand")
     fields = REF2VA_FIELDS if mode == "Ref2VA" else T2VA_FIELDS
     pos = [t.find(f) for f in fields]
     missing = [f for f, p in zip(fields, pos) if p < 0]
@@ -110,10 +132,12 @@ def contract_errors(block, *, mode, lab, duration_s):
     elif pos != sorted(pos):
         errs.append(f"the fields are out of order; {mode} order is: " + " / ".join(fields))
     if not missing and t.lstrip().find(fields[0]) != 0:
-        errs.append(f"the block must start with `{fields[0]}`: nothing before it (no instruction line, no title)")
+        errs.append(f"the block must start with `{fields[0]}`: nothing before it "
+                    "(no instruction line, no title)")
     if mode == "T2VA":
         if "subject_definitions:" in t or _LABEL.search(t):
-            errs.append("T2VA has no reference labels: remove every <Picture N>, <Subject N>, <Video N>, <Audio N> and subject_definitions")
+            errs.append("T2VA has no reference labels: remove every <Picture N>, "
+                        "<Subject N>, <Video N>, <Audio N> and subject_definitions")
     else:
         pics = {p["n"] for p in lab.get("pictures") or []}
         subs = set((lab.get("subjects") or {}).keys())
@@ -121,11 +145,16 @@ def contract_errors(block, *, mode, lab, duration_s):
         used = {(k, int(n)) for k, n in _LABEL.findall(t)}
         for k, n in sorted(used):
             if k == "Picture" and n not in pics:
-                errs.append(f"<Picture {n}> is not on the rail; the pictures are " + (", ".join(f"<Picture {x}>" for x in sorted(pics)) or "none"))
+                errs.append(f"<Picture {n}> is not on the rail; the pictures are "
+                            + (", ".join(f"<Picture {x}>" for x in sorted(pics)) or "none"))
             if k == "Subject" and n not in subs:
                 errs.append(f"<Subject {n}> is not defined by the rail")
             if k == "Audio" and n not in auds:
-                errs.append((f"<Audio {n}> is not on the rail; the audios are " + ", ".join(f"<Audio {x}>" for x in sorted(auds))) if auds else f"remove <Audio {n}>: no audio reference is on the rail")
+                errs.append(
+                    (f"<Audio {n}> is not on the rail; the audios are "
+                     + ", ".join(f"<Audio {x}>" for x in sorted(auds)))
+                    if auds else f"remove <Audio {n}>: no audio reference is on the rail"
+                )
             if k == "Video":
                 errs.append(f"remove <Video {n}>: the Standard writer cites no clips")
         for n in sorted(pics):
@@ -138,8 +167,21 @@ def contract_errors(block, *, mode, lab, duration_s):
             if ("Audio", n) not in used:
                 errs.append(f"<Audio {n}> is on the rail but never cited")
         summ = _field(t, "summary:")
-        if summ and not re.match(r"\s*\[[^\]]+\]", summ):
-            errs.append("summary must open with its [task type], e.g. [reference generation]")
+        if summ:
+            m_sum = re.match(r"\s*\[([^\]]+)\]", summ)
+            if not m_sum:
+                errs.append("summary must open with its [task type], e.g. [reference generation]")
+            else:
+                sum_tags = [x.strip().lower() for x in m_sum.group(1).split("+") if x.strip()]
+                if not sum_tags or len(sum_tags) != len(set(sum_tags)):
+                    errs.append(f"summary task prefix `[{m_sum.group(1)}]` must not repeat or leave empty task types")
+                unknown_tags = [x for x in sum_tags if x not in _ALLOWED_TASK_TAGS]
+                if unknown_tags:
+                    errs.append("summary uses unsupported task type(s): " + ", ".join(unknown_tags))
+                if start_image is False and "keyframe completion" in sum_tags:
+                    pic_descs = " ".join(str(p.get("desc") or "") for p in (lab.get("pictures") or []))
+                    if not re.search(r"\b(?:first\s+frame|last\s+frame|final\s+frame|keyframe|frame\s*0|anchor\s+at)\b", pic_descs, re.I):
+                        errs.append("omit `keyframe completion` from summary when no start/keyframe anchor picture is wired")
         ret = _field(t, "retention_analysis:")
         for n in sorted(subs):
             if not re.search(rf"^\s*<Subject {n}>", ret, re.M):
@@ -152,31 +194,49 @@ def contract_errors(block, *, mode, lab, duration_s):
                 errs.append(f"retention_analysis needs its own line for <Audio {a['n']}>")
     if re.search(r"(?<![\w<])@\w", t):
         errs.append("no @tags in the block: use the labels the node listed")
-    body = _field(t, "detailed_description:" if mode == "Ref2VA" else "integrated_multimodal_description:")
+    body = _field(t, "detailed_description:" if mode == "Ref2VA"
+                  else "integrated_multimodal_description:")
     shots = list(_SHOT.finditer(body))
     if not shots:
         errs.append("the description needs [Shot 1]")
     else:
         if shots[0].group(1) != "1" or shots[0].group(2):
             errs.append("[Shot 1] comes first and has no timestamp")
+        expected_shot_n = 1
         last = 0.0
-        for m in shots[1:]:
+        for idx, m in enumerate(shots):
+            shot_n = int(m.group(1))
+            if shot_n != expected_shot_n:
+                errs.append(f"found [Shot {shot_n}], expected [Shot {expected_shot_n}] in sequence")
+            expected_shot_n = shot_n + 1
+            if idx == 0:
+                continue
             if not m.group(2):
                 errs.append(f"[Shot {m.group(1)}] needs `At MM:SS.mmm,`")
                 continue
             s = _secs(m, 3, 4)
             if s <= last or s >= float(duration_s):
-                errs.append(f"[Shot {m.group(1)}] at {s:.3f}s must be after the last cut and inside the {float(duration_s):.2f}s clip")
+                errs.append(f"[Shot {m.group(1)}] at {s:.3f}s must be after the last cut "
+                            f"and inside the {float(duration_s):.2f}s clip")
             last = max(last, s)
     for m in _RANGE.finditer(body):
         if _secs(m, 3, 4) > float(duration_s) + 0.05:
-            errs.append(f"the range ending at {_secs(m, 3, 4):.3f}s runs past the {float(duration_s):.2f}s clip")
+            errs.append(f"the range ending at {_secs(m, 3, 4):.3f}s runs past the "
+                        f"{float(duration_s):.2f}s clip")
+    for wf in ("overall_soundscape:", "non_diegetic_music:"):
+        wf_body = _field(t, wf)
+        if wf_body and ("<d>" in wf_body.lower() or "</d>" in wf_body.lower()):
+            errs.append(f"remove <d> dialogue tags from `{wf}`")
     outside = _DLG.sub(" ", t)
     neg = sorted({w.lower() for w in _NEG.findall(outside)})
     if neg:
-        errs.append("the paste is additive: rewrite every negation as what IS there (" + ", ".join(neg) + ")")
+        errs.append("the paste is additive: rewrite every negation as what IS there "
+                    f"({', '.join(neg)})")
     for d in _DLG.findall(t):
-        if re.search(r"[\u2018\u2019\u201c\u201d\u00a0]", d):
+        if not d.strip() or _SPEECH_EMPTY_D.match(d.strip()):
+            errs.append("omit silent <d> lines completely rather than putting 'no dialogue' or empty text inside <d>...</d>")
+            break
+        if re.search(r"[‘’“”\xa0]", d):
             errs.append("straight quotes and plain spaces inside <d> lines")
             break
     return errs

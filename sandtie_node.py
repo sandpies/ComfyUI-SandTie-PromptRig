@@ -14,6 +14,7 @@ from comfy_api.latest import io
 
 from . import media as _media
 from .htc_compat import standard as _std
+from .htc_sandtie import beat_grid as _st_bg
 from .htc_sandtie import finisher as _st_fin
 from .htc_sandtie import refs as _st_refs
 from .htc_sandtie import writer as _st_writer
@@ -131,10 +132,7 @@ def _resolve_canvas_size(aspect: str, width: int, height: int) -> tuple[int, int
 
 
 def _align_frames(dur_s: float) -> int:
-    n = max(5, int(round(float(dur_s) * FPS)))
-    while n % 17 != 5:
-        n += 1
-    return n
+    return _st_bg.h3_video_length_from_seconds(dur_s, fps=FPS)
 
 
 def _split_h3_sections(block: str) -> tuple[str, str, str]:

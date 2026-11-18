@@ -43,16 +43,16 @@ Ready-to-run graphs ship in [`example_workflows/`](./example_workflows):
 
 1. **`◩ CPU Tie` (0 VRAM, Instant)** — Deterministic multi-beat H3 assembler combining active dials, camera motion laws, weighted beat timelines (`5–15 s`), and Reference Bible descriptions. No LLM required.
 2. **`⚡ Quick Tie (1-Pass)` / `Plan -> Write` (Local LLM)** — Calls any local OpenAI-compatible server (**LM Studio**, **nInfer**, llama.cpp, vLLM) with structured output, 2.5 MP Eye Scan vision context, and **✧ Double-Knot** pass-2 continuity verification. Pick **`LM Studio` / `nInfer`** right next to the status pill (or click **`⚙`**) inside **Open SandTie Studio** to set your URL, Model, and server path.
-3. **`▶ Video -> Beats` (30-FPS OpenCV Extractor)** — Point at a reference `.mp4`, optionally trim `IN`/`OUT`, and extract motion cadence + camera trajectory + jump cuts directly into timed `[Shot N]` beats.
+3. **`▶ Video -> Beats` (24-FPS OpenCV Extractor)** — Point at a reference `.mp4`, optionally trim `IN`/`OUT`, and extract motion cadence + camera trajectory + jump cuts directly into timed `[Shot N]` beats.
 
 ---
 
 ## Inside SandTie Studio (`⬒ Open SandTie Studio`)
 
 - **19 Clean-Room Director Dials (2-Tier):**
-  - *Primary 8:* `Cam` (`171`), `Light` (`71` options incl. `Soft Natural Light` & `Soft Natural Window Light`), `Style` (`94`), `Place` (`127` incl. plain enclosed & window bedrooms + combat/dance plates), `Wear` (`149`), `Action` (`178` incl. blow-for-blow `ms` fights), `Stage` (`380`), `Speech` (`60`).
-  - *Optics, Grade, Dance & Audio Drawer (11):* `Optics` (`94`), `Grade` (`44`), `FX` (`106`, `Delayed Mid` / `From Start`), `Dance / Pose` (`200` TikTok, K-Pop idol, waacking/crunk, duet & ensemble flows), `Playbook` (`49`), `Cast Type` (`40`), `Genre` (`8`), `Era` (`17`), `Accent` (`30`), `Ambience` (`45` incl. `Pure Music N/A`), `Music` (`52`).
-- **114 Built-In Presets + Smart Roll:** Domain-locked & aspect-safe (`16:9` / `4:3` / `9:16`) **Surprise Roll**, **Match Dials** from brief keywords, **Compose Brief**, **47 Clean Showcase Scripts**, and **❝ Fresh Dialogue** rewrites.
+  - *Primary 8:* `Cam` (`177`), `Light` (`71` options incl. `Soft Natural Light` & `Soft Natural Window Light`), `Style` (`94`), `Place` (`127` incl. plain enclosed & window bedrooms + combat/dance plates), `Wear` (`149`), `Action` (`194` incl. blow-for-blow `ms` fights & Uber Fights), `Stage` (`384`), `Speech` (`60`).
+  - *Optics, Grade, Dance & Audio Drawer (11):* `Optics` (`94`), `Grade` (`44`), `FX` (`106`, `Delayed Mid` / `From Start`), `Dance / Pose` (`216` TikTok, K-Pop idol fingertip tutting & MV cuts, waacking/crunk, duet & ensemble flows), `Playbook` (`49`), `Cast Type` (`40`), `Genre` (`8`), `Era` (`17`), `Accent` (`30`), `Ambience` (`45` incl. `Pure Music N/A`), `Music` (`52`).
+- **168 Built-In Combos + Smart Roll:** Cast-aware, domain-locked & aspect-safe (`16:9` / `4:3` / `9:16`) **Surprise Roll**, **Match Dials** from brief keywords, **Compose Brief**, **54 Clean Showcase Scripts**, and **❝ Fresh Dialogue** rewrites.
 - **Built-In MiniMax H3 Rules:** Zero non-`<d>` negations, automatic TTS cleanup (`<d>[voice] "..."</d>`), semicolon/speech stripping from `overall_soundscape:` & `non_diegetic_music:`, 12 H3 motion primitives, Open-End Range & Background Plate amplitude laws, and a live `7,000`-char encoder counter.
 - **All 6 MiniMax H3 Output Formats:** `Ref2VA / T2VA`, `I2VA` (`0.00 seconds` anchor), `FL2VA` (`0.00` + end-mark), `L2VA` (end-mark), `Start Frame Prep` (`p-h3-image`), and `Storyboard Beats Only`.
 
