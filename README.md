@@ -67,7 +67,7 @@ Ready-to-run graphs ship in [`example_workflows/`](./example_workflows):
    ```
 2. **Restart ComfyUI** (requires **ComfyUI v0.38.0+**) and hard-refresh your browser (`Ctrl+Shift+R`).
 3. Drop **SandTie PromptRig (H3)** (under `MiniMax H3`) or load [`example_workflows/SandTie_Direct_H3_Conditioning.json`](./example_workflows/SandTie_Direct_H3_Conditioning.json).
-4. Optional local LLM writer: click **`⬒ Open SandTie Studio`** → pick **`LM Studio` / `nInfer`** (or click **`⚙`** beside `Start / Stop`) to configure your URL, model, or server exe (or stay on **Instant CPU Tie** for 0-VRAM deterministic prompts).
+4. Optional local LLM writer: click **`⬒ Open SandTie Studio`** → pick **`Local server` / `nInfer` / `basalt`** (or click **`⚙`** beside `Start / Stop`) to configure your URL, model, or server exe (or stay on **Instant CPU Tie** for 0-VRAM deterministic prompts). First time? Open [`docs/writer_setup.html`](./docs/writer_setup.html): pick your GPU, follow one tab (nInfer and basalt install with one paste).
 
 ### Required Stock Models (for H3 Video Generation)
 
